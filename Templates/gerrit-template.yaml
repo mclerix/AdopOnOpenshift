@@ -1,0 +1,266 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-gerrit
+  annotations:
+    description: "gerrit for ADOP"
+    tags: "gerrit,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${GERRIT_NAME}-mysql
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${GERRIT_NAME}-mysql
+      container: ${GERRIT_NAME}-mysql
+      app: adop-${GERRIT_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${GERRIT_NAME}-mysql
+          container: ${GERRIT_NAME}-mysql
+          app: adop-${GERRIT_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_DATABASE
+            value: ${MYSQL_DATABASE}
+          - name: MYSQL_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          - name: MYSQL_ROOT_PASSWORD
+            value: ${MYSQL_ROOT_PASSWORD}
+          - name: MYSQL_USER
+            value: ${MYSQL_USER}
+          image: mysql
+          imagePullPolicy: Always
+          name: ${GERRIT_NAME}-mysql
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: gerrit-mysql
+            containerPort: 3306
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${GERRIT_NAME}-mysql
+    labels:
+      service: ${GERRIT_NAME}-mysql
+  spec:
+    ports:
+    - name: gerrit-mysql
+      port: 3306
+      targetPort: 3306
+    selector:
+      deploymentconfig: ${GERRIT_NAME}-mysql
+      container: ${GERRIT_NAME}-mysql
+      app: adop-${GERRIT_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${GERRIT_NAME}-mysql
+    labels:
+      app: ${GERRIT_NAME}-mysql
+  spec:
+    host: ${GERRIT_NAME}-mysql.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${GERRIT_NAME}-mysql
+  port:
+    port: 3306
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${GERRIT_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${GERRIT_NAME}
+      container: ${GERRIT_NAME}
+      app: adop-${GERRIT_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${GERRIT_NAME}
+          container: ${GERRIT_NAME}
+          app: adop-${GERRIT_NAME}
+      spec:
+        containers:
+        - env:
+          - name: DATABASE_TYPE
+            value: "mysql"
+          - name: DB_HOSTNAME
+            value: ${DB_HOSTNAME}
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_NAME
+            value: ${MYSQL_DATABASE}
+          - name: DB_USER
+            value: ${MYSQL_USER}
+          - name: DB_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          - name: AUTH_TYPE
+            value: "LDAP"
+          - name: GERRIT_PASSWORD
+            value: ${GERRIT_PASSWORD}
+          - name: JENKINS_PASSWORD
+            value: ${JENKINS_PASSWORD}
+          - name: INITIAL_ADMIN_USER
+            value: ${INITIAL_ADMIN_USER}
+          - name: INITIAL_ADMIN_PASSWORD
+            value: ${INITIAL_ADMIN_PASSWORD}
+          - name: LDAP_SERVER
+            value: ${LDAP_SERVER}
+          - name: LDAP_ACCOUNTBASE
+            value: "dc=ldap,dc=example,dc=com"
+          image: accenture/adop-gerrit:0.1.2
+          imagePullPolicy: Always
+          name: ${GERRIT_NAME}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 8080
+          - name: ssh
+            containerPort: 29418
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${GERRIT_NAME}
+    labels:
+      service: ${GERRIT_NAME}
+  spec:
+    ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    selector:
+      deploymentconfig: ${GERRIT_NAME}
+      container: ${GERRIT_NAME}
+      app: adop-${GERRIT_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${GERRIT_NAME}-ssh
+    labels:
+      service: ${GERRIT_NAME}-ssh
+  spec:
+    ports:
+    - name: ssh
+      port: 29418
+      targetPort: 29418
+      protocol: TCP
+    selector:
+      deploymentconfig: ${GERRIT_NAME}
+      container: ${GERRIT_NAME}
+      app: adop-${GERRIT_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${GERRIT_NAME}
+    labels:
+      app: ${GERRIT_NAME}
+  spec:
+    host: ${GERRIT_NAME}.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${GERRIT_NAME}
+  port:
+    port: 8080
+parameters:
+- description: "TODO"
+  value: "gerrit"
+  name: GERRIT_NAME
+  required: true
+- description: "TODO"
+  value: "gerrit"
+  name: MYSQL_DATABASE
+  required: true
+- description: "TODO"
+  value: "gerrit"
+  name: MYSQL_PASSWORD
+  required: false
+- description: "TODO"
+  value: "gerrit"
+  name: MYSQL_ROOT_PASSWORD
+  required: true
+- description: "TODO"
+  value: "gerrit"
+  name: MYSQL_USER
+  required: true
+- description: "TODO"
+  value: "gerrit-mysql"
+  name: DB_HOSTNAME
+  required: true
+- description: "TODO"
+  value: "gerrit"
+  name: GERRIT_PASSWORD
+  required: false
+- description: "TODO"
+  value: "jenkins"
+  name: JENKINS_PASSWORD
+  required: false
+- description: "TODO"
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  required: false
+  name: INITIAL_ADMIN_USER
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  required: false
+  name: INITIAL_ADMIN_PASSWORD
+- description: "TODO"
+  value: "ldap:389"
+  required: false
+  name: LDAP_SERVER
+- description: "TODO"
+  value: "dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_ACCOUNTBASE

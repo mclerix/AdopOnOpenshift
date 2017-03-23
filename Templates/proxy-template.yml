@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-proxy
+  annotations:
+    description: "proxy for ADOP"
+    tags: "proxy,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${PROXY_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${PROXY_NAME}
+      container: ${PROXY_NAME}
+      app: adop-${PROXY_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${PROXY_NAME}
+          container: ${PROXY_NAME}
+          app: adop-${PROXY_NAME}
+      spec:
+        containers:
+        - env:
+          - name: LDAP_SERVER
+            value: ${INITIAL_ADMIN_PASSWORD}
+          - name: LDAP_USERNAME
+            value: ${INITIAL_ADMIN_USER}
+          - name: LDAP_PASSWORD
+            value: ${JENKINS_PASSWORD}
+          - name: LDAP_USER_BASE_DN
+            value: ${SLAPD_DOMAIN}
+          - name: LDAP_GROUP_ATTRIBUTE
+            value: ${SLAPD_FULL_DOMAIN}
+          - name: LDAP_USER_ID_ATTRIBUTE
+            value: ${SLAPD_PASSWORD}
+          - name: LDAP_USER_OBJECT_CLASS
+            value: ${LDAP_USER_OBJECT_CLASS}
+          image: accenture/adop-nginx:0.3.0
+          imagePullPolicy: Always
+          name: ${PROXY_NAME}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 80
+          - name: https
+            containerPort: 443
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${PROXY_NAME}
+    labels:
+      service: ${PROXY_NAME}
+  spec:
+    ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: https
+      protocol: TCP
+    selector:
+      deploymentconfig: ${PROXY_NAME}
+      container: ${PROXY_NAME}
+      app: adop-${PROXY_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${PROXY_NAME}
+    labels:
+      app: ${PROXY_NAME}
+  spec:
+    host: ${PROXY_NAME}.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${PROXY_NAME}
+  port:
+    targetPort: 80
+    containerPort: 80
+parameters:
+- description: "TODO"
+  value: 'proxy'
+  name: PROXY_NAME
+  required: true
+- description: "TODO"
+  value: 'ldap.cloudapps.example.com:389'
+  name: LDAP_SERVER
+  required: true
+- description: "TODO"
+  value: 'cn=admin'
+  name: LDAP_USERNAME
+  required: true
+- description: "TODO"
+  value: 'Jpk66g63ZifGYIcShSGM'
+  name: LDAP_PASSWORD
+  required: false
+- description: "TODO"
+  value: 'ou=people'
+  name: LDAP_USER_BASE_DN
+  required: true
+- description: "TODO"
+  value: 'member'
+  name: LDAP_GROUP_ATTRIBUTE
+  required: true
+- description: "TODO"
+  value: 'cn'
+  name: LDAP_USER_ID_ATTRIBUTE
+  required: false
+- description: "TODO"
+  value: "inetOrgPerson"
+  name: LDAP_USER_OBJECT_CLASS
+  required: false

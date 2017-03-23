@@ -1,0 +1,497 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-sensu
+  annotations:
+    description: "SENSU for ADOP"
+    tags: "sensu,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-uchiwa
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-uchiwa
+      container: ${SENSU_NAME}-uchiwa
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-uchiwa
+          container: ${SENSU_NAME}-uchiwa
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - env:
+          - name: SENSU_DC_NAME
+            value: "Sensu"
+          - name: SENSU_HOSTNAME
+            value: "sensu-api"
+          image: sstarcher/uchiwa:0.15.0
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-mysql
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: ${SENSU_NAME}-uchiwa
+            containerPort: 3000
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SENSU_NAME}-uchiwa
+    labels:
+      service: ${SENSU_NAME}-uchiwa
+  spec:
+    ports:
+    - name: ${SENSU_NAME}-uchiwa
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SENSU_NAME}-uchiwa
+      container: ${SENSU_NAME}-uchiwa
+      app: adop-${SENSU_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${SENSU_NAME}-uchiwa
+    labels:
+      app: ${SENSU_NAME}-uchiwa
+  spec:
+    host: ${SENSU_NAME}-uchiwa.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${SENSU_NAME}-uchiwa
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-api
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-api
+      container: ${SENSU_NAME}-api
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-api
+          container: ${SENSU_NAME}-api
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - env:
+          - name: TRANSPORT_NAME
+            value: rabbitmq
+          - name: RABBITMQ_HOST
+            value: ${RABBITMQ_HOST}
+          - name: REDIS_HOST
+            value: ${REDIS_HOST}
+          image: accenture/adop-sensu:0.2.0
+          args:
+            - "api"
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-api
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: api
+            containerPort: 4567
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SENSU_NAME}-api
+    labels:
+      service: ${SENSU_NAME}-api
+  spec:
+    ports:
+    - name: api
+      port: 4567
+      targetPort: api
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SENSU_NAME}-api
+      container: ${SENSU_NAME}-api
+      app: adop-${SENSU_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${SENSU_NAME}-api
+    labels:
+      app: ${SENSU_NAME}-api
+  spec:
+    host: ${SENSU_NAME}-api.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${SENSU_NAME}-api
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-server
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-server
+      container: ${SENSU_NAME}-server
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-server
+          container: ${SENSU_NAME}-server
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - env:
+          - name: API_HOST
+            value: ${RABBITMQ_HOST}
+          - name: CLIENT_NAME
+            value: ${REDIS_HOST}
+          - name: RABBITMQ_HOST
+            value: ${RABBITMQ_HOST}
+          - name: REDIS_HOST
+            value: ${REDIS_HOST}
+          - name: TRANSPORT_NAME
+            value: rabbitmq
+          image: accenture/adop-sensu:0.2.0
+          args:
+            - "server"
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-server
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: ssh
+            containerPort: 22
+          - name: sensu-server
+            containerPort: 3000
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SENSU_NAME}-server
+    labels:
+      service: ${SENSU_NAME}-server
+  spec:
+    ports:
+    - name: sensu-server-ssh
+      port: 22
+      targetPort: ssh
+      protocol: TCP
+    - name: sensu-server
+      port: 3000
+      targetPort: sensu-server
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SENSU_NAME}-server
+      container: ${SENSU_NAME}-server
+      app: adop-${SENSU_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${SENSU_NAME}-server
+    labels:
+      app: ${SENSU_NAME}-server
+  spec:
+    host: ${SENSU_NAME}-server.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${SENSU_NAME}-server
+  port:
+    port: 3000
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-client
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-client
+      container: ${SENSU_NAME}-client
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-client
+          container: ${SENSU_NAME}-client
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - env:
+          - name: TRANSPORT_NAME
+            value: rabbitmq
+          - name: CLIENT_NAME
+            value: ${CLIENT_NAME}
+          - name: CLIENT_ADDRESS
+            value: ${CLIENT_ADDRESS}
+          - name: RABBITMQ_HOST
+            value: ${RABBITMQ_HOST}
+          - name: JENKINS_PREFIX
+            value: ${JENKINS_PREFIX}
+          - name: CLIENT_SUBSCRIPTIONS
+            value: ${CLIENT_SUBSCRIPTIONS}
+          image: accenture/adop-sensu:0.2.0
+          args:
+            - "client"
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-client
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-rabbitmq
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-rabbitmq
+      container: ${SENSU_NAME}-rabbitmq
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-rabbitmq
+          container: ${SENSU_NAME}-rabbitmq
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - image: rabbitmq:3.5.7-management
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-rabbitmq
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: rabbitmq1
+            containerPort: 5672
+          - name: rabbitmq2
+            containerPort: 5671
+          - name: rabbitmq3
+            containerPort: 15672
+          - name: rabbitmq4
+            containerPort: 15671
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SENSU_NAME}-rabbitmq
+    labels:
+      service: ${SENSU_NAME}-rabbitmq
+  spec:
+    ports:
+    - name: rabbitmq1
+      port: 5672
+      targetPort: rabbitmq1
+      protocol: TCP
+    - name: rabbitmq2
+      port: 5671
+      targetPort: rabbitmq2
+      protocol: TCP
+    - name: rabbitmq3
+      port: 15672
+      targetPort: rabbitmq3
+      protocol: TCP
+    - name: rabbitmq4
+      port: 15671
+      targetPort: rabbitmq4
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SENSU_NAME}-rabbitmq
+      container: ${SENSU_NAME}-rabbitmq
+      app: adop-${SENSU_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SENSU_NAME}-redis
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SENSU_NAME}-redis
+      container: ${SENSU_NAME}-redis
+      app: adop-${SENSU_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SENSU_NAME}-redis
+          container: ${SENSU_NAME}-redis
+          app: adop-${SENSU_NAME}
+      spec:
+        containers:
+        - image: redis:3.0.7
+          imagePullPolicy: Always
+          name: ${SENSU_NAME}-redis
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: ${SENSU_NAME}-redis
+            containerPort: 6379
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SENSU_NAME}-redis
+    labels:
+      service: ${SENSU_NAME}-redis
+  spec:
+    ports:
+    - name: ${SENSU_NAME}-redis
+      port: 6379
+    selector:
+      deploymentconfig: ${SENSU_NAME}-redis
+      container: ${SENSU_NAME}-redis
+      app: adop-${SENSU_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+parameters:
+- description: "TODO"
+  value: "sensu"
+  name: SENSU_NAME
+  required: true
+- description: "TODO"
+  value: "sensu-rabbitmq"
+  name: RABBITMQ_HOST
+  required: true
+- description: "TODO"
+  value: "sensu-redis"
+  name: REDIS_HOST
+  required: false
+- description: "TODO"
+  value: "SENSU"
+  name: MYSQL_ROOT_PASSWORD
+  required: true
+- description: "TODO"
+  value: "SENSU"
+  name: MYSQL_USER
+  required: true
+- description: "TODO"
+  value: "SENSU"
+  name: SENSU_PASSWORD
+  required: false
+- description: "TODO"
+  value: "jenkins"
+  name: JENKINS_PASSWORD
+  required: false
+- description: "TODO"
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  required: false
+  name: INITIAL_ADMIN_USER
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  required: false
+  name: INITIAL_ADMIN_PASSWORD
+- description: "TODO"
+  value: "dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_ACCOUNTBASE

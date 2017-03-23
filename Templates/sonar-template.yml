@@ -1,0 +1,233 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-sonar
+  annotations:
+    description: "sonar for ADOP"
+    tags: "sonar,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SONAR_NAME}-mysql
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SONAR_NAME}-mysql
+      container: ${SONAR_NAME}-mysql
+      app: adop-${SONAR_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SONAR_NAME}-mysql
+          container: ${SONAR_NAME}-mysql
+          app: adop-${SONAR_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MYSQL_DATABASE
+            value: ${MYSQL_DATABASE}
+          - name: MYSQL_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          - name: MYSQL_ROOT_PASSWORD
+            value: ${MYSQL_ROOT_PASSWORD}
+          - name: MYSQL_USER
+            value: ${MYSQL_USER}
+          image: mysql:5.6.25
+          imagePullPolicy: Always
+          name: ${SONAR_NAME}-mysql
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: mysql
+            containerPort: 3306
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SONAR_NAME}-mysql
+    labels:
+      service: ${SONAR_NAME}-mysql
+  spec:
+    ports:
+    - name: mysql
+      port: 3306
+      targetPort: mysql
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SONAR_NAME}-mysql
+      container: ${SONAR_NAME}-mysql
+      app: adop-${SONAR_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SONAR_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SONAR_NAME}
+      container: ${SONAR_NAME}
+      app: adop-${SONAR_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SONAR_NAME}
+          container: ${SONAR_NAME}
+          app: adop-${SONAR_NAME}
+      spec:
+        containers:
+        - env:
+          - name: LDAP_URL
+            value: ${LDAP_URL}
+          - name: LDAP_BIND_PASSWORD
+            value: ${LDAP_BIND_PASSWORD}
+          - name: LDAP_USER_REQUEST
+            value: ${LDAP_USER_REQUEST}
+          - name: LDAP_GROUP_REQUEST
+            value: ${LDAP_GROUP_REQUEST}
+          - name: LDAP_BIND_DN
+            value: ${LDAP_BIND_DN}
+          - name: LDAP_USER_BASE_DN
+            value: ${LDAP_USER_BASE_DN}
+          - name: LDAP_USER_REEAL_NAME_ATTRIBUTE
+            value: ${LDAP_USER_REEAL_NAME_ATTRIBUTE}
+          - name: LDAP_USER_EMAIL_ATTRIBUTE
+            value: ${LDAP_USER_EMAIL_ATTRIBUTE}
+          - name: LDAP_GROUP_BASE_DN
+            value: ${LDAP_GROUP_BASE_DN}
+          - name: LDAP_GROUP_ID_ATTRIBUTE
+            value: ${LDAP_GROUP_ID_ATTRIBUTE}
+          - name: SONARQUBE_JDBC_URL
+            value: ${SONARQUBE_JDBC_URL}
+          - name: SONARQUBE_JDBC_USERNAME
+            value: ${MYSQL_USER}
+          - name: SONARQUBE_JDBC_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          image: accenture/adop-sonar:0.2.0
+          imagePullPolicy: Always
+          name: ${SONAR_NAME}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 9000
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SONAR_NAME}
+    labels:
+      service: ${SONAR_NAME}
+  spec:
+    ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SONAR_NAME}
+      container: ${SONAR_NAME}
+      app: adop-${SONAR_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${SONAR_NAME}
+    labels:
+      app: ${SONAR_NAME}
+  spec:
+    host: ${SONAR_NAME}.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${SONAR_NAME}
+parameters:
+- description: "TODO"
+  value: "LDAP://LDAP:389"
+  name: LDAP_URL
+  required: true
+- description: "TODO"
+  value: "ldap:389"
+  name: LDAP_SERVER
+  required: true
+- description: "TODO"
+  value: "cn=admin"
+  name: LDAP_USERNAME
+  required: true
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  name: LDAP_PASSWORD
+  required: false
+- description: "TODO"
+  value: "ou=people"
+  name: LDAP_USER_BASE_DN
+  required: true
+- description: "TODO"
+  value: "member"
+  name: LDAP_GROUP_ATTRIBUTE
+  required: true
+- description: "TODO"
+  value: "cn"
+  name: LDAP_USER_ID_ATTRIBUTE
+  required: false
+- description: ""
+  value: "inetOrgPerson"
+  name: LDAP_USER_OBJECT_CLASS
+  required: false
+- description: "TODO"
+  value: "jdbc:mysql://sonar-mysql:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true"
+  name: SONARQUBE_JDBC_URL
+  required: true
+- description: "TODO"
+  value: "sonar"
+  name: MYSQL_DATABASE
+  required: false
+- description: "TODO"
+  value: "sonar"
+  name: MYSQL_PASSWORD
+  required: true
+- description: "TODO"
+  value: "sonar"
+  name: MYSQL_ROOT_PASSWORD
+  required: true
+- description: "TODO"
+  value: "sonar"
+  name: MYSQL_USER
+  required: true

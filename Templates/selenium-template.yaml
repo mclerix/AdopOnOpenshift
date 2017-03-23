@@ -1,0 +1,228 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-selenium
+  annotations:
+    description: "selenium for ADOP"
+    tags: "selenium,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SELENIUM_NAME}-hub
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-hub
+      container: ${SELENIUM_NAME}-hub
+      app: adop-${SELENIUM_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SELENIUM_NAME}-hub
+          container: ${SELENIUM_NAME}-hub
+          app: adop-${SELENIUM_NAME}
+      spec:
+        containers:
+        - image: selenium/hub:2.53.0
+          imagePullPolicy: Always
+          name: ${SELENIUM_NAME}-hub
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: selenium-hub
+            containerPort: 4444
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SELENIUM_NAME}-hub
+    labels:
+      service: ${SELENIUM_NAME}-hub
+  spec:
+    ports:
+    - name: selenium
+      port: 4444
+      targetPort: 4444
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-hub
+      container: ${SELENIUM_NAME}-hub
+      app: adop-${SELENIUM_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${SELENIUM_NAME}-hub
+    labels:
+      app: ${SELENIUM_NAME}-hub
+  spec:
+    host: ${SELENIUM_NAME}-hub.cloudapps.example.com
+    to:
+      kind: Service
+      name: ${SELENIUM_NAME}-hub
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SELENIUM_NAME}-node-chrome
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-node-chrome
+      container: ${SELENIUM_NAME}-node-chrome
+      app: adop-${SELENIUM_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SELENIUM_NAME}-node-chrome
+          container: ${SELENIUM_NAME}-node-chrome
+          app: adop-${SELENIUM_NAME}
+      spec:
+        containers:
+        - env:
+          - name: SE_OPTS
+            value: "-nodeConfig /var/selenium-config/config-chrome.json"
+          - name: REMOTE_HOST
+            value: "http://selenium-node-chrome:5555"
+          - name: HUB_PORT_4444_TCP_ADDR
+            value: "selenium-hub"
+          - name: HUB_PORT_4444_TCP_PORT
+            value: "4444"
+          image: selenium/node-chrome:2.53.0
+          imagePullPolicy: Always
+          name: ${SELENIUM_NAME}-node-chrome
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 5555
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SELENIUM_NAME}-node-chrome
+    labels:
+      service: ${SELENIUM_NAME}-node-chrome
+  spec:
+    ports:
+    - name: http
+      port: 5555
+      targetPort: 5555
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-node-chrome
+      container: ${SELENIUM_NAME}-node-chrome
+      app: adop-${SELENIUM_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${SELENIUM_NAME}-node-firefox
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-node-firefox
+      container: ${SELENIUM_NAME}-node-firefox
+      app: adop-${SELENIUM_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SELENIUM_NAME}-node-firefox
+          container: ${SELENIUM_NAME}-node-firefox
+          app: adop-${SELENIUM_NAME}
+      spec:
+        containers:
+        - env:
+          - name: SE_OPTS
+            value: "-nodeConfig /var/selenium-config/config-firefox.json"
+          - name: REMOTE_HOST
+            value: "http://selenium-node-firefox:5555"
+          - name: HUB_PORT_4444_TCP_ADDR
+            value: "selenium-hub"
+          - name: HUB_PORT_4444_TCP_PORT
+            value: "4444"
+          image: selenium/node-firefox:2.53.0
+          imagePullPolicy: Always
+          name: ${SELENIUM_NAME}-node-firefox
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 5555
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SELENIUM_NAME}-node-firefox
+    labels:
+      service: ${SELENIUM_NAME}-node-firefox
+  spec:
+    ports:
+    - name: http
+      port: 5555
+      targetPort: 5555
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SELENIUM_NAME}-node-firefox
+      container: ${SELENIUM_NAME}-node-firefox
+      app: adop-${SELENIUM_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+parameters:
+- description: "TODO"
+  value: "selenium"
+  name: SELENIUM_NAME
+  required: true
