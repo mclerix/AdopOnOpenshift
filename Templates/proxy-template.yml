@@ -39,17 +39,17 @@ objects:
             mountPath: /usr/share/nginx/html
           env:
           - name: LDAP_SERVER
-            value: ${INITIAL_ADMIN_PASSWORD}
+            value: ${LDAP_SERVER}
           - name: LDAP_USERNAME
-            value: ${INITIAL_ADMIN_USER}
+            value: ${LDAP_USERNAME}
           - name: LDAP_PASSWORD
-            value: ${JENKINS_PASSWORD}
+            value: ${LDAP_PASSWORD}
           - name: LDAP_USER_BASE_DN
-            value: ${SLAPD_DOMAIN}
+            value: ${LDAP_USER_BASE_DN}
           - name: LDAP_GROUP_ATTRIBUTE
-            value: ${SLAPD_FULL_DOMAIN}
+            value: ${LDAP_GROUP_ATTRIBUTE}
           - name: LDAP_USER_ID_ATTRIBUTE
-            value: ${SLAPD_PASSWORD}
+            value: ${LDAP_USER_ID_ATTRIBUTE}
           - name: LDAP_USER_OBJECT_CLASS
             value: ${LDAP_USER_OBJECT_CLASS}
           image: accenture/adop-nginx:0.3.0
@@ -103,7 +103,7 @@ objects:
   metadata:
     name: ${PROXY_NAME}
     labels:
-      app: ${PROXY_NAME}
+      service: ${PROXY_NAME}
   spec:
     host: ${PROXY_NAME}.cloudapps.example.com
     to:
@@ -111,7 +111,6 @@ objects:
       name: ${PROXY_NAME}
   port:
     targetPort: 80
-    containerPort: 80
 parameters:
 - description: "TODO"
   value: 'proxy'
