@@ -60,6 +60,7 @@ objects:
     - name: selenium
       port: 4444
       targetPort: 4444
+      protocol: TCP
     selector:
       deploymentconfig: ${SELENIUM_NAME}-hub
       container: ${SELENIUM_NAME}-hub

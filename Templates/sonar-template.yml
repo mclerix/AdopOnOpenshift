@@ -68,7 +68,7 @@ objects:
     ports:
     - name: mysql
       port: 3306
-      targetPort: mysql
+      targetPort: 3306
       protocol: TCP
     selector:
       deploymentconfig: ${SONAR_NAME}-mysql
@@ -118,8 +118,8 @@ objects:
             value: ${LDAP_BIND_DN}
           - name: LDAP_USER_BASE_DN
             value: ${LDAP_USER_BASE_DN}
-          - name: LDAP_USER_REEAL_NAME_ATTRIBUTE
-            value: ${LDAP_USER_REEAL_NAME_ATTRIBUTE}
+          - name: LDAP_USER_REAL_NAME_ATTRIBUTE
+            value: ${LDAP_USER_REAL_NAME_ATTRIBUTE}
           - name: LDAP_USER_EMAIL_ATTRIBUTE
             value: ${LDAP_USER_EMAIL_ATTRIBUTE}
           - name: LDAP_GROUP_BASE_DN
@@ -156,8 +156,8 @@ objects:
   spec:
     ports:
     - name: http
-      port: 80
-      targetPort: http
+      port: 9000
+      targetPort: 9000
       protocol: TCP
     selector:
       deploymentconfig: ${SONAR_NAME}
@@ -180,36 +180,48 @@ objects:
       name: ${SONAR_NAME}
 parameters:
 - description: "TODO"
-  value: "LDAP://LDAP:389"
+  value: "sonar"
+  name: SONAR_NAME
+  required: true
+- description: "TODO"
+  value: "ldap://ldap:389"
   name: LDAP_URL
   required: true
 - description: "TODO"
-  value: "ldap:389"
-  name: LDAP_SERVER
-  required: true
-- description: "TODO"
-  value: "cn=admin"
-  name: LDAP_USERNAME
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  name: LDAP_BIND_DN
   required: true
 - description: "TODO"
   value: "Jpk66g63ZifGYIcShSGM"
-  name: LDAP_PASSWORD
+  name: LDAP_BIND_PASSWORD
   required: false
 - description: "TODO"
-  value: "ou=people"
+  value: "ou=people,dc=ldap,dc=example,dc=com"
   name: LDAP_USER_BASE_DN
   required: true
 - description: "TODO"
-  value: "member"
-  name: LDAP_GROUP_ATTRIBUTE
+  value: "(&(objectClass=inetOrgPerson)(uid={login}))"
+  name: LDAP_USER_REQUEST
   required: true
 - description: "TODO"
-  value: "cn"
-  name: LDAP_USER_ID_ATTRIBUTE
+  value: "displayName"
+  name: LDAP_USER_REAL_NAME_ATTRIBUTE
+  required: true
+- description: "TODO"
+  value: "mail"
+  name: LDAP_USER_REAL_NAME_ATTRIBUTE
+  required: true
+- description: "TODO"
+  value: "ou=groups,dc=ldap,dc=example,dc=com"
+  name: LDAP_GROUP_BASE_DN
+  required: true
+- description: "TODO"
+  value: "(&(objectClass=groupOfUniqueNames)(uniqueMember={dn}))"
+  name: LDAP_GROUP_REQUEST
   required: false
 - description: ""
-  value: "inetOrgPerson"
-  name: LDAP_USER_OBJECT_CLASS
+  value: "cn"
+  name: LDAP_GROUP_ID_ATTRIBUTE
   required: false
 - description: "TODO"
   value: "jdbc:mysql://sonar-mysql:3306/sonar?useUnicode=true&characterEncoding=utf8&rewriteBatchedStatements=true"

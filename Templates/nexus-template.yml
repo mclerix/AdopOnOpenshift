@@ -79,6 +79,7 @@ objects:
     - name: nexus
       port: 8081
       targetPort: 8081
+      protocol: TCP
     selector:
       deploymentconfig: ${NEXUS_NAME}
       container: ${NEXUS_NAME}

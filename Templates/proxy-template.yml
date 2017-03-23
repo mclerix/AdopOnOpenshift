@@ -34,7 +34,10 @@ objects:
           app: adop-${PROXY_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: html
+            mountPath: /usr/share/nginx/html
+          env:
           - name: LDAP_SERVER
             value: ${INITIAL_ADMIN_PASSWORD}
           - name: LDAP_USERNAME
@@ -56,14 +59,19 @@ objects:
           terminationMessagePath: /dev/termination-log
         ports:
           - name: http
+            protocol: TCP
             containerPort: 80
           - name: https
+            protocol: TCP
             containerPort: 443
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: html
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -76,11 +84,11 @@ objects:
     ports:
     - name: http
       port: 80
-      targetPort: http
+      targetPort: 80
       protocol: TCP
     - name: https
       port: 443
-      targetPort: https
+      targetPort: 443
       protocol: TCP
     selector:
       deploymentconfig: ${PROXY_NAME}
@@ -110,11 +118,11 @@ parameters:
   name: PROXY_NAME
   required: true
 - description: "TODO"
-  value: 'ldap.cloudapps.example.com:389'
+  value: 'ldap:389'
   name: LDAP_SERVER
   required: true
 - description: "TODO"
-  value: 'cn=admin'
+  value: 'cn=admin,dc=ldap,dc=example,dc=com'
   name: LDAP_USERNAME
   required: true
 - description: "TODO"
@@ -122,7 +130,7 @@ parameters:
   name: LDAP_PASSWORD
   required: false
 - description: "TODO"
-  value: 'ou=people'
+  value: 'ou=people,dc=ldap,dc=example,dc=com'
   name: LDAP_USER_BASE_DN
   required: true
 - description: "TODO"

@@ -43,7 +43,7 @@ objects:
             value: ${MYSQL_ROOT_PASSWORD}
           - name: MYSQL_USER
             value: ${MYSQL_USER}
-          image: mysql
+          image: mysql:5.6.25
           imagePullPolicy: Always
           name: ${GERRIT_NAME}-mysql
           resources: {}
@@ -143,7 +143,11 @@ objects:
           - name: LDAP_SERVER
             value: ${LDAP_SERVER}
           - name: LDAP_ACCOUNTBASE
-            value: "dc=ldap,dc=example,dc=com"
+            value: ${LDAP_ACCOUNTBASE}
+          - name: LDAP_USERNAME
+            value: ${LDAP_USERNAME}
+          - name: LDAP_PASSWORD
+            value: ${LDAP_PASSWORD}
           image: accenture/adop-gerrit:0.1.2
           imagePullPolicy: Always
           name: ${GERRIT_NAME}
@@ -249,11 +253,11 @@ parameters:
   name: JENKINS_PASSWORD
   required: false
 - description: "TODO"
-  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  value: "adop"
   required: false
   name: INITIAL_ADMIN_USER
 - description: "TODO"
-  value: "Jpk66g63ZifGYIcShSGM"
+  value: "adop"
   required: false
   name: INITIAL_ADMIN_PASSWORD
 - description: "TODO"
@@ -264,3 +268,11 @@ parameters:
   value: "dc=ldap,dc=example,dc=com"
   required: false
   name: LDAP_ACCOUNTBASE
+- description: "TODO"
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_USERNAME
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  required: false
+  name: LDAP_PASSWORD

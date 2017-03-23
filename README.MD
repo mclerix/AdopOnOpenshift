@@ -31,7 +31,22 @@ Content of ``gc_log`` file: <br>
 ``2017-03-22 13:53:29,570] INFO  : Ignoring missing gc schedule configuration`` <br>
 ``httpd_log`` & ``sshd_log`` do not display any errors <br>
 
-* Sensu
+## Sensu
+### sensu-redis
+WORKS
+### sensu-rabbitmq
+WORKS
+### sensu-api
+``{"timestamp":"2017-03-23T08:51:58.830830+0000","level":"error","message":"redis connection error","error":"unable to connect to redis server"}
+{"timestamp":"2017-03-23T08:51:59.022461+0000","level":"error","message":"[amqp] Detected TCP connection failure: Errno::EHOSTUNREACH"}``
+### sensu-server
+``{"timestamp":"2017-03-23T08:52:01.840097+0000","level":"error","message":"redis connection error","error":"unable to connect to redis server"}
+{"timestamp":"2017-03-23T08:52:02.028845+0000","level":"error","message":"[amqp] Detected TCP connection failure: Errno::EHOSTUNREACH"}``
+### sensu-client
+### sensu-uchiwa
+``{"timestamp":"2017-03-23T09:15:13.41385771Z","level":"warn","message":"GET http://sensu-api:4567/stashes returned: Get http://sensu-api:4567/stashes: dial tcp 172.30.201.20:4567: getsockopt: no route to host"}
+{"timestamp":"2017-03-23T09:15:13.413886253Z","level":"warn","message":"Connection failed to the datacenter Sensu"}``
+
 Error identified:
 * Sonar
 Error identified:
