@@ -41,7 +41,7 @@ After that, the ADOP stack should be deployed and available in your Openshift cl
 
 # Errors identified
 
-/!\ an ELK stack is required by ADOP.
+**/!\ an ELK stack is required by ADOP.**
 
 ## Proxy
 Nginx does not start and requires all the other Components URL up. Moreover it requires the ELK stack. <br>
@@ -295,6 +295,6 @@ Providing the IP address of the container running LDAP as LDAP_URL does not solv
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
 * Configure Jenkins to deploy on Openshift.
 * Configure Jenkins to sync with Openshift
+* Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/)
 * Identify Required parameters.
 * Write parameters' description.
-* Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/)
