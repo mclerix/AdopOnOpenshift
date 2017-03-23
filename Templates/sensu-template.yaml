@@ -260,7 +260,8 @@ objects:
       kind: Service
       name: ${SENSU_NAME}-server
   port:
-    port: 3000
+    targetPort: 3000
+  wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -310,8 +311,10 @@ objects:
           terminationMessagePath: /dev/termination-log
         ports:
           - name: sensu-client-ssh
+            protocol: TCP
             containerPort: 22
           - name: sensu-client
+            protocol: TCP
             containerPort: 3000
         dnsPolicy: ClusterFirst
         restartPolicy: Always
@@ -356,7 +359,8 @@ objects:
       kind: Service
       name: ${SENSU_NAME}-client
   port:
-    port: 3000
+    targetPort: 3000
+  wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -489,6 +493,7 @@ objects:
     ports:
     - name: ${SENSU_NAME}-redis
       port: 6379
+      targetPort: 6379
     selector:
       deploymentconfig: ${SENSU_NAME}-redis
       container: ${SENSU_NAME}-redis

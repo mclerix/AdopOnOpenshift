@@ -34,7 +34,10 @@ objects:
           app: adop-${JENKINS_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: jenkins
+            mountPath: /var/jenkins_home
+          env:
           - name: INITIAL_ADMIN_PASSWORD
             value: ${INITIAL_ADMIN_PASSWORD}
           - name: INITIAL_ADMIN_USER
@@ -128,6 +131,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: jenkins
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -141,9 +147,11 @@ objects:
     - name: http-${JENKINS_NAME}
       port: 8080
       targetPort: 8080
+      protocol: TCP
     - name: agent-${JENKINS_NAME}
       port: 50000
       targetPort: 50000
+      protocol: TCP
     selector:
       deploymentconfig: ${JENKINS_NAME}
       container: ${JENKINS_NAME}
@@ -164,7 +172,8 @@ objects:
       kind: Service
       name: ${JENKINS_NAME}
   port:
-    port: 8080
+    targetPort: 8080
+  wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:

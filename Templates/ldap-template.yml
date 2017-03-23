@@ -124,13 +124,13 @@ objects:
         containers:
         - env:
           - name: LDAP_LTB_BS
-            value: ${GERRIT_PASSWORD}
+            value: ${LDAP_LTB_BS}
           - name: LDAP_LTB_DN
-            value: ${INITIAL_ADMIN_PASSWORD}
+            value: ${LDAP_LTB_DN}
           - name: LDAP_LTB_PWD
-            value: ${INITIAL_ADMIN_USER}
+            value: ${LDAP_LTB_PWD}
           - name: LDAP_LTB_URL
-            value: ${JENKINS_PASSWORD}
+            value: ${LDAP_LTB_URL}
           image: accenture/adop-ldap-ltb:0.1.0
           imagePullPolicy: Always
           name: ${LDAP_NAME}-ltb

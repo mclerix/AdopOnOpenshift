@@ -95,7 +95,7 @@ objects:
     labels:
       app: ${NEXUS_NAME}
   spec:
-    host: ${NEXUS_NAME}.cloudapps.example.com
+    host: ${NEXUS_NAME}.cloudapps.example.com/nexus
     to:
       kind: Service
       name: ${NEXUS_NAME}
@@ -105,7 +105,7 @@ parameters:
   name: NEXUS_NAME
   required: true
 - description: "TODO"
-  value: "http://nexus:8081/nexus"
+  value: "http://nexus.cloudapps.example.com/nexus"
   name: NEXUS_BASE_URL
   required: true
 - description: "TODO"

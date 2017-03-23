@@ -111,6 +111,7 @@ objects:
       name: ${PROXY_NAME}
   port:
     targetPort: 80
+  wildcardPolicy: None
 parameters:
 - description: "TODO"
   value: 'proxy'
