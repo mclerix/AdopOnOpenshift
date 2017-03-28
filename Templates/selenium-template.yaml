@@ -107,7 +107,10 @@ objects:
           app: adop-${SELENIUM_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: selenium_chrome_config
+            mountPath: /var/selenium-config
+          env:
           - name: SE_OPTS
             value: "-nodeConfig /var/selenium-config/config-chrome.json"
           - name: REMOTE_HOST
@@ -129,6 +132,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: selenium_chrome_config
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -178,7 +184,10 @@ objects:
           app: adop-${SELENIUM_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: selenium_firefox_config
+            mountPath: /var/selenium-config
+          env:
           - name: SE_OPTS
             value: "-nodeConfig /var/selenium-config/config-firefox.json"
           - name: REMOTE_HOST
@@ -200,6 +209,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: selenium_firefox_config
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

@@ -34,7 +34,10 @@ objects:
           app: adop-${GERRIT_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: data
+            mountPath: /var/lib/mysql
+          env:
           - name: MYSQL_DATABASE
             value: ${MYSQL_DATABASE}
           - name: MYSQL_PASSWORD
@@ -56,6 +59,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: data
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -117,7 +123,12 @@ objects:
           app: adop-${GERRIT_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: repos
+            mountPath: /var/git/repos
+          - name: review_site
+            mountPath: /var/gerrit/review_site
+          env:
           - name: DATABASE_TYPE
             value: "mysql"
           - name: DB_HOSTNAME
@@ -163,6 +174,11 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: repos
+          emptyDir: {}
+        - name: review_site
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

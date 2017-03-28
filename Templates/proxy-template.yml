@@ -37,6 +37,8 @@ objects:
         - volumeMounts:
           - name: html
             mountPath: /usr/share/nginx/html
+          - name: config
+            mountPath: /etc/nginx
           env:
           - name: LDAP_SERVER
             value: ${LDAP_SERVER}
@@ -71,6 +73,8 @@ objects:
         serviceAccount: adop
         volumes:
         - name: html
+          emptyDir: {}
+        - name: config
           emptyDir: {}
   status: {}
 - apiVersion: v1

@@ -34,7 +34,10 @@ objects:
           app: adop-${SONAR_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: sonar_mysql_data
+            mountPath: /var/lib/mysql
+          env:
           - name: MYSQL_DATABASE
             value: ${MYSQL_DATABASE}
           - name: MYSQL_PASSWORD
@@ -56,6 +59,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: sonar_mysql_data
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -105,7 +111,14 @@ objects:
           app: adop-${SONAR_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: sonar_data
+            mountPath: /opt/sonarqube/data
+          - name: sonar_extensions
+            mountPath: /opt/sonarqube/extensions
+          - name: sonar_logs
+            mountPath: /opt/sonarqube/logs
+          env:
           - name: LDAP_URL
             value: ${LDAP_URL}
           - name: LDAP_BIND_PASSWORD
@@ -145,6 +158,13 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: sonar_data
+          emptyDir: {}
+        - name: sonar_extensions
+          emptyDir: {}
+        - name: sonar_logs
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

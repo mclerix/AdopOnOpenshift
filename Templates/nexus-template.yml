@@ -34,7 +34,10 @@ objects:
           app: adop-${NEXUS_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: sonatype_work
+            mountPath: /sonatype-work
+          env:
           - name: NEXUS_BASE_URL
             value: ${NEXUS_BASE_URL}
           - name: LDAP_SEARCH_BASE
@@ -66,6 +69,9 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: sonatype_work
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

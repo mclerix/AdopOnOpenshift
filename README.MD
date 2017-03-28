@@ -74,6 +74,7 @@ $servers->setValue('server','tls',false);
 ```
 
 ### ldap-ltb
+WEB UI is up.
 Logs display the following message: <br>
 ```
 AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 10.128.0.42. Set the 'ServerName' directive globally to suppress this message

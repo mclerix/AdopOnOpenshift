@@ -34,7 +34,12 @@ objects:
           app: adop-${LDAP_NAME}
       spec:
         containers:
-        - env:
+        - volumeMounts:
+          - name: db
+            mountPath: /var/lib/ldap
+          - name: static
+            mountPath: /etc/ldap
+          env:
           - name: INITIAL_ADMIN_PASSWORD
             value: ${INITIAL_ADMIN_PASSWORD}
           - name: INITIAL_ADMIN_USER
@@ -62,6 +67,11 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
+        volumes:
+        - name: db
+          emptyDir: {}
+        - name: static
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
