@@ -5,6 +5,7 @@
   * OpenShift Origin
   * Minishift
 * Git installed
+* Make sure you have at least 30 Gi available in your docker devicemapper for ADOP images
 
 # How to run ADOP on OpenShift
 
@@ -121,6 +122,13 @@ WORKS
         from /opt/sensu/bin/sensu-api:22:in `<main>'                                                                                            
 ```
 
+**Current fix** <br>
+Once running, exec the following command:<br>
+``oc exec <sensu-api-pod> -c sensu-api -- chmod -R 777 /tmp/sensu_api_loaded_files`` <br>
+``oc exec <sensu-api-pod> -c sensu-api -- service sensu-api restart`` <br>
+To get <sensu-server-pod>, you can type the following command: <br>
+``oc get pods | grep sensu-server | cut -d' ' -f 1``
+
 ### sensu-server
 /!\ Requires to be launched once rabbitmq is ready to avoid the following error:
 ```bash
@@ -144,6 +152,14 @@ WORKS
         from /opt/sensu/bin/sensu-server:22:in `load'                                                                                                                                                                                  
         from /opt/sensu/bin/sensu-server:22:in `<main>'
 ```
+
+**Current fix** <br>
+Once running, exec the following command:<br>
+``oc exec <sensu-server-pod> -c sensu-server -- chmod -R 777 /tmp/sensu_server_loaded_files`` <br>
+``oc exec <sensu-server-pod> -c sensu-server -- service sensu-server restart`` <br>
+To get <sensu-server-pod>, you can type the following command: <br>
+``oc get pods | grep sensu-server | cut -d' ' -f 1``
+
 ### sensu-client
 /!\ Requires to be launched once rabbitmq is ready to avoid the following error:
 ```
@@ -167,6 +183,44 @@ WORKS
         from /opt/sensu/bin/sensu-client:22:in `load'                                                                                                                                                                                                                       
         from /opt/sensu/bin/sensu-client:22:in `<main>'  
 ```
+
+**Current fix** <br>
+Once running, exec the following command:<br>
+``oc exec <sensu-client-pod> -c sensu-client -- chmod -R 777 /tmp/sensu_client_loaded_files`` <br>
+``oc exec <sensu-client-pod> -c sensu-client -- service sensu-client restart`` <br>
+To get <sensu-client-pod>, you can type the following command: <br>
+``oc get pods | grep sensu-client | cut -d' ' -f 1``
+
+
+The following error occurs after trying to relaunch sensu-client service:
+
+```
+
+/opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:530:in `start_tcp_server': no acceptor (port is in use or requires root privileges) (RuntimeError)                                               
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:530:in `start_server'                                                                                                               
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/lib/sensu/client/process.rb:364:in `setup_sockets'                                                                                                              
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/lib/sensu/client/process.rb:452:in `block in start'                                                                                                             
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/lib/sensu/daemon.rb:273:in `block in setup_transport'                                                                                                           
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-transport-6.0.0/lib/sensu/transport.rb:26:in `block in connect'                                                                                                        
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/em/deferrable.rb:151:in `set_deferred_status'                                                                                                       
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/em/deferrable.rb:191:in `succeed'                                                                                                                   
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-transport-6.0.0/lib/sensu/transport/rabbitmq.rb:195:in `block in setup_connection'                                                                                     
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/em/deferrable.rb:151:in `set_deferred_status'                                                                                                       
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/em/deferrable.rb:191:in `succeed'                                                                                                                   
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:682:in `connection_successful'                                                                                                                
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:1040:in `handle_open_ok'                                                                                                                      
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:1136:in `block in <class:Session>'                                                                                                            
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:959:in `receive_frameset'                                                                                                                     
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:933:in `receive_frame'                                                                                                                        
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/amqp-1.6.0/lib/amqp/session.rb:671:in `receive_data'                                                                                                                         
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:194:in `run_machine'                                                                                                                
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:194:in `run'                                                                                                                        
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/lib/sensu/client/process.rb:18:in `run'                                                                                                                         
+        from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/exe/sensu-client:10:in `<top (required)>'                                                                                                                       
+        from /opt/sensu/bin/sensu-client:22:in `load'                                                                                                                                                                                  
+        from /opt/sensu/bin/sensu-client:22:in `<main>'    
+```
+
 ### sensu-uchiwa
 Sensu-uchiwa can't connect to sensu-api (Actually, Service is not running). However, the web interface is accessible.
 ```
@@ -179,6 +233,7 @@ Sensu-uchiwa can't connect to sensu-api (Actually, Service is not running). Howe
 WORKS
 ### sonar
 WORKS. Default user admin/admin
+Currently, Sonar is the only container that is able to reach LDAP.
 
 ## Jenkins
 Errors during installation:
@@ -295,7 +350,8 @@ Providing the IP address of the container running LDAP as LDAP_URL does not solv
 * Add ELK stack or synchronize with openshift-metrics.
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
 * Configure Jenkins to deploy on Openshift.
-* Configure Jenkins to sync with Openshift
-* Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/)
+* Configure Jenkins to sync with Openshift (Should work out-of-the-box once Openshift plugins will be installed).
+* Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/).
 * Identify Required parameters.
 * Write parameters' description.
+* Write Readiness and liveness probes for ADOP containers.

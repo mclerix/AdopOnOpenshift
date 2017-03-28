@@ -101,7 +101,7 @@ objects:
     labels:
       app: ${NEXUS_NAME}
   spec:
-    host: ${NEXUS_NAME}.cloudapps.example.com/nexus
+    host: ${NEXUS_NAME}.cloudapps.example.com
     to:
       kind: Service
       name: ${NEXUS_NAME}
