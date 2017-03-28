@@ -35,7 +35,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: sonar_mysql_data
+          - name: sonar-mysql-data
             mountPath: /var/lib/mysql
           env:
           - name: MYSQL_DATABASE
@@ -60,7 +60,7 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: sonar_mysql_data
+        - name: sonar-mysql-data
           emptyDir: {}
   status: {}
 - apiVersion: v1
@@ -112,11 +112,11 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: sonar_data
+          - name: sonar-data
             mountPath: /opt/sonarqube/data
-          - name: sonar_extensions
+          - name: sonar-extensions
             mountPath: /opt/sonarqube/extensions
-          - name: sonar_logs
+          - name: sonar-logs
             mountPath: /opt/sonarqube/logs
           env:
           - name: LDAP_URL
@@ -159,11 +159,11 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: sonar_data
+        - name: sonar-data
           emptyDir: {}
-        - name: sonar_extensions
+        - name: sonar-extensions
           emptyDir: {}
-        - name: sonar_logs
+        - name: sonar-logs
           emptyDir: {}
   status: {}
 - apiVersion: v1

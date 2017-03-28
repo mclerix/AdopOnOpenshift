@@ -35,7 +35,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: data
+          - name: gerrit-mysql-data
             mountPath: /var/lib/mysql
           env:
           - name: MYSQL_DATABASE
@@ -60,7 +60,7 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: data
+        - name: gerrit-mysql-data
           emptyDir: {}
   status: {}
 - apiVersion: v1
@@ -126,7 +126,7 @@ objects:
         - volumeMounts:
           - name: repos
             mountPath: /var/git/repos
-          - name: review_site
+          - name: review-site
             mountPath: /var/gerrit/review_site
           env:
           - name: DATABASE_TYPE
@@ -177,7 +177,7 @@ objects:
         volumes:
         - name: repos
           emptyDir: {}
-        - name: review_site
+        - name: review-site
           emptyDir: {}
   status: {}
 - apiVersion: v1

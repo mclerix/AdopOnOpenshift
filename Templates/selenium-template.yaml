@@ -108,7 +108,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: selenium_chrome_config
+          - name: selenium-chrome-config
             mountPath: /var/selenium-config
           env:
           - name: SE_OPTS
@@ -133,7 +133,7 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: selenium_chrome_config
+        - name: selenium-chrome-config
           emptyDir: {}
   status: {}
 - apiVersion: v1
@@ -185,7 +185,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: selenium_firefox_config
+          - name: selenium-firefox-config
             mountPath: /var/selenium-config
           env:
           - name: SE_OPTS
@@ -210,7 +210,7 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: selenium_firefox_config
+        - name: selenium-firefox-config
           emptyDir: {}
   status: {}
 - apiVersion: v1

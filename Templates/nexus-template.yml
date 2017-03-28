@@ -35,7 +35,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: sonatype_work
+          - name: sonatype-work
             mountPath: /sonatype-work
           env:
           - name: NEXUS_BASE_URL
@@ -70,7 +70,7 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: sonatype_work
+        - name: sonatype-work
           emptyDir: {}
   status: {}
 - apiVersion: v1
