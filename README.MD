@@ -56,9 +56,22 @@ kibana:5601 unavailable, sleeping for 2
 
 ## LDAP
 ### ldap
-WORKS
+**WORKS**
+**SOLVED** Gerrit and Jenkins users are not created. All other groups and users are created. While logging into the container and trying to add user manually the following happens:
+```
+ldapadd -H ldap://localhost -c -x -D "cn=admin,dc=ldap,dc=example,dc=com" -f "/tmp/structure.ldif" -w "Jpk66g63ZifGYIcShSGM"                                                                                                         
+adding new entry "ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                                                                 
+ldap_add: Already exists (68)                                                                                                                                                                                                          
+
+ldapadd: invalid format (line 18) entry: "cn=gerrit,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                               
+ldapadd: invalid format (line 31) entry: "cn=jenkins,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                              
+adding new entry "cn=nexus,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                                                        
+ldap_add: Already exists (68)                                      
+```
+> Username and password should be different to avoid this error
+
 ### ldap-phpadmin
-ldap-phpadmin can't connect directly to ldap server using hostname. However, reconfiguring ``/etc/phpldapadmin/config.php`` and set the IP address of the ldap-server container instead of its hostname seems to fix the problem. See example below: <br>
+**WARNING** ldap-phpadmin can't connect directly to ldap server using hostname. However, reconfiguring ``/etc/phpldapadmin/config.php`` and set the IP address of the ldap-server container instead of its hostname seems to fix the problem. See example below: <br>
 
 ```php
 <?php
@@ -75,7 +88,7 @@ $servers->setValue('server','tls',false);
 ```
 
 ### ldap-ltb
-WEB UI is up.
+**WARNING** WEB UI is up.
 Logs display the following message: <br>
 ```
 AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 10.128.0.42. Set the 'ServerName' directive globally to suppress this message
@@ -83,14 +96,23 @@ AH00558: apache2: Could not reliably determine the server's fully qualified doma
 
 ## Gerrit
 ### gerrit-mysql
-WORKS
+**WORKS**
 ### gerrit
-**CRITICAL** Once launched, Gerrit display the following message each 10 seconds: <br>
+**SOLVED** Once launched, Gerrit display the following message each 10 seconds: <br>
 `Gerrit unavailable, sleeping for 10` <br>
 Content of ``gc_log`` file: <br>
 `2017-03-22 13:53:29,570] INFO  : Ignoring missing gc schedule configuration` <br>
 `httpd_log` & `sshd_log` do not display any errors <br>
-> It seems that $GERRIT_HOME/adop_scripts/create_user.sh tries to curl an address that does not exist and can't create users even if Gerrit is up and running.
+ *It seems that $GERRIT_HOME/adop_scripts/create_user.sh tries to curl an address that does not exist and can't create users even if Gerrit is up and running.*
+ > This problem has been solved by modifying the create_yser.sh script. /gerrit has been removed from the login URL in order to contact the right endpoint
+
+ **CRITICAL** Once Gerrit is up and running and tries to create users, the following error appears for each user:
+ ```
+ [2017-03-31 12:16:45,504] INFO  com.google.gerrit.pgm.Daemon : Gerrit Code Review 2.10.6 ready
+ Creating user: gerrit
+ [2017-03-31 12:16:48,378] INFO  com.google.gerrit.httpd.auth.ldap.LdapLoginServlet : 'gerrit' failed to sign in: No such user: gerrit
+ Unable to create user gerrit, response code 401, retry ... 1
+```
 
 ## Sensu
 ### sensu-redis
@@ -128,6 +150,7 @@ Once running, exec the following command:<br>
 ``oc exec <sensu-api-pod> -c sensu-api -- service sensu-api restart`` <br>
 To get <sensu-server-pod>, you can type the following command: <br>
 ``oc get pods | grep sensu-server | cut -d' ' -f 1``
+> Upgrading the image to the latest version (0.28.4) does not change anything
 
 ### sensu-server
 /!\ Requires to be launched once rabbitmq is ready to avoid the following error:
@@ -159,6 +182,7 @@ Once running, exec the following command:<br>
 ``oc exec <sensu-server-pod> -c sensu-server -- service sensu-server restart`` <br>
 To get <sensu-server-pod>, you can type the following command: <br>
 ``oc get pods | grep sensu-server | cut -d' ' -f 1``
+> Upgrading the image to the latest version (0.28.4) does not change anything
 
 ### sensu-client
 /!\ Requires to be launched once rabbitmq is ready to avoid the following error:
@@ -190,7 +214,7 @@ Once running, exec the following command:<br>
 ``oc exec <sensu-client-pod> -c sensu-client -- service sensu-client restart`` <br>
 To get <sensu-client-pod>, you can type the following command: <br>
 ``oc get pods | grep sensu-client | cut -d' ' -f 1``
-
+> Upgrading the image to the latest version (0.28.4) does not change anything
 
 The following error occurs after trying to relaunch sensu-client service:
 
@@ -317,6 +341,132 @@ Saving changes.
 Selenium-hub, selenium-node-firefox & selenium-node-chrome components WORK
 
 ## Nexus
+**WORKS**
+
+### LDAP Password
+**WARNING** There is an error decoding ldap.xml file, see error below:<br>
+```
+2017-03-31 09:55:46 ERROR [jetty-main-1] *SYSTEM org.sonatype.security.ldap.realms.persist.DefaultLdapConfiguration - Failed to decrypt password, assuming the password in file: '/sonatype-work/conf/ldap.xml' is clear text.
+org.sonatype.security.ldap.upgrade.cipher.PlexusCipherException: java.lang.Exception: default.plexus.cipher.encryptedStringCorruptedStructure
+	at org.sonatype.security.ldap.upgrade.cipher.DefaultPlexusCipher.decrypt(DefaultPlexusCipher.java:199) ~[nexus-ldap-realm-plugin-2.11.3-01/:na]
+	at org.sonatype.security.ldap.realms.persist.DefaultPasswordHelper.decrypt(DefaultPasswordHelper.java:54) ~[nexus-ldap-realm-plugin-2.11.3-01/:na]
+	at org.sonatype.security.ldap.realms.persist.AbstractLdapConfiguration.load(AbstractLdapConfiguration.java:203) [nexus-ldap-realm-plugin-2.11.3-01/:na]
+	at org.sonatype.security.ldap.realms.persist.AbstractLdapConfiguration.<init>(AbstractLdapConfiguration.java:129) [nexus-ldap-realm-plugin-2.11.3-01/:na]
+	at org.sonatype.security.ldap.realms.persist.DefaultLdapConfiguration.<init>(DefaultLdapConfiguration.java:38) [nexus-ldap-realm-plugin-2.11.3-01/:na]
+	at org.sonatype.security.ldap.realms.persist.DefaultLdapConfiguration$$FastClassByGuice$$b83ca5be.newInstance(<generated>) [sisu-guice-3.1.10.jar:na]
+	at com.google.inject.internal.cglib.reflect.$FastConstructor.newInstance(FastConstructor.java:40) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.DefaultConstructionProxyFactory$1.newInstance(DefaultConstructionProxyFactory.java:61) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:108) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.access$000(ConstructorInjector.java:32) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector$1.call(ConstructorInjector.java:92) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:113) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:129) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:90) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:279) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter$1.call(ProviderToInternalFactoryAdapter.java:46) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1057) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter.get(ProviderToInternalFactoryAdapter.java:40) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.Scopes$1$1.get(Scopes.java:59) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToProviderAdapter.get(InternalFactoryToProviderAdapter.java:41) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.FactoryProxy.get(FactoryProxy.java:56) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1000) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1057) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:996) [sisu-guice-3.1.10.jar:3.1.10]
+	at org.eclipse.sisu.inject.LazyBeanEntry.getValue(LazyBeanEntry.java:82) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at org.eclipse.sisu.wire.BeanProviders.firstOf(BeanProviders.java:179) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at org.eclipse.sisu.wire.BeanProviders$7.get(BeanProviders.java:160) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at com.google.inject.internal.ProviderInternalFactory.provision(ProviderInternalFactory.java:86) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToInitializableAdapter.provision(InternalFactoryToInitializableAdapter.java:55) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderInternalFactory$1.call(ProviderInternalFactory.java:70) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:113) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:129) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderInternalFactory.circularGet(ProviderInternalFactory.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToInitializableAdapter.get(InternalFactoryToInitializableAdapter.java:47) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.SingleParameterInjector.inject(SingleParameterInjector.java:38) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.SingleParameterInjector.getAll(SingleParameterInjector.java:62) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:107) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.access$000(ConstructorInjector.java:32) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector$1.call(ConstructorInjector.java:92) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:113) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:129) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:90) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:279) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter$1.call(ProviderToInternalFactoryAdapter.java:46) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1057) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter.get(ProviderToInternalFactoryAdapter.java:40) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.Scopes$1$1.get(Scopes.java:59) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToProviderAdapter.get(InternalFactoryToProviderAdapter.java:41) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.FactoryProxy.get(FactoryProxy.java:56) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1000) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1057) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:996) [sisu-guice-3.1.10.jar:3.1.10]
+	at org.eclipse.sisu.inject.LazyBeanEntry.getValue(LazyBeanEntry.java:82) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at org.eclipse.sisu.wire.BeanProviders.firstOf(BeanProviders.java:179) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at org.eclipse.sisu.wire.BeanProviders$7.get(BeanProviders.java:160) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at com.google.inject.internal.ProviderInternalFactory.provision(ProviderInternalFactory.java:86) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToInitializableAdapter.provision(InternalFactoryToInitializableAdapter.java:55) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderInternalFactory$1.call(ProviderInternalFactory.java:70) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:113) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:129) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderInternalFactory.circularGet(ProviderInternalFactory.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToInitializableAdapter.get(InternalFactoryToInitializableAdapter.java:47) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.SingleParameterInjector.inject(SingleParameterInjector.java:38) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.SingleParameterInjector.getAll(SingleParameterInjector.java:62) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:107) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.access$000(ConstructorInjector.java:32) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector$1.call(ConstructorInjector.java:92) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:113) [sisu-guice-3.1.10.jar:3.1.10]
+	at org.eclipse.sisu.bean.BeanScheduler$Activator.onProvision(BeanScheduler.java:176) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at com.google.inject.internal.ProvisionListenerStackCallback$Provision.provision(ProvisionListenerStackCallback.java:122) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProvisionListenerStackCallback.provision(ProvisionListenerStackCallback.java:68) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:90) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:279) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter$1.call(ProviderToInternalFactoryAdapter.java:46) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1057) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.ProviderToInternalFactoryAdapter.get(ProviderToInternalFactoryAdapter.java:40) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.Scopes$1$1.get(Scopes.java:59) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InternalFactoryToProviderAdapter.get(InternalFactoryToProviderAdapter.java:41) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.FactoryProxy.get(FactoryProxy.java:56) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1000) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1050) [sisu-guice-3.1.10.jar:3.1.10]
+	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:996) [sisu-guice-3.1.10.jar:3.1.10]
+	at org.eclipse.sisu.inject.LazyBeanEntry.getValue(LazyBeanEntry.java:82) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at org.eclipse.sisu.wire.NamedIterableAdapter$NamedEntry.getValue(NamedIterableAdapter.java:125) [org.eclipse.sisu.inject-0.2.0.jar:na]
+	at java.util.AbstractMap.get(AbstractMap.java:182) [na:1.7.0_76]
+	at org.sonatype.security.DefaultSecuritySystem.getRealmsFromConfigSource(DefaultSecuritySystem.java:223) [nexus-security-2.11.3-01.jar:2.11.3-01]
+	at org.sonatype.security.DefaultSecuritySystem.setSecurityManagerRealms(DefaultSecuritySystem.java:796) [nexus-security-2.11.3-01.jar:2.11.3-01]
+	at org.sonatype.security.DefaultSecuritySystem.start(DefaultSecuritySystem.java:774) [nexus-security-2.11.3-01.jar:2.11.3-01]
+	at org.sonatype.nexus.NxApplication.doStart(NxApplication.java:134) [nexus-core-2.11.3-01.jar:2.11.3-01]
+	at org.sonatype.sisu.goodies.lifecycle.LifecycleSupport$Handler.doStart(LifecycleSupport.java:70) [goodies-lifecycle-1.9.jar:1.9]
+	at org.sonatype.sisu.goodies.lifecycle.LifecycleHandlerContext$MainMap_Starting.started(LifecycleHandlerContext.java:255) [goodies-lifecycle-1.9.jar:1.9]
+	at org.sonatype.sisu.goodies.lifecycle.LifecycleHandlerContext.started(LifecycleHandlerContext.java:57) [goodies-lifecycle-1.9.jar:1.9]
+	at org.sonatype.sisu.goodies.lifecycle.LifecycleSupport.start(LifecycleSupport.java:129) [goodies-lifecycle-1.9.jar:1.9]
+	at org.sonatype.nexus.webapp.WebappBootstrap.contextInitialized(WebappBootstrap.java:168) [classes/:na]
+	at org.eclipse.jetty.server.handler.ContextHandler.callContextInitialized(ContextHandler.java:782) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.servlet.ServletContextHandler.callContextInitialized(ServletContextHandler.java:424) [jetty-servlet-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.handler.ContextHandler.startContext(ContextHandler.java:774) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.servlet.ServletContextHandler.startContext(ServletContextHandler.java:249) [jetty-servlet-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.webapp.WebAppContext.startContext(WebAppContext.java:1242) [jetty-webapp-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.handler.ContextHandler.doStart(ContextHandler.java:717) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.webapp.WebAppContext.doStart(WebAppContext.java:494) [jetty-webapp-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:64) [jetty-util-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.doStart(HandlerWrapper.java:95) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:64) [jetty-util-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.handler.HandlerCollection.doStart(HandlerCollection.java:229) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:64) [jetty-util-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.handler.HandlerWrapper.doStart(HandlerWrapper.java:95) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.server.Server.doStart(Server.java:282) [jetty-server-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:64) [jetty-util-8.1.16.v20140903.jar:8.1.16.v20140903]
+	at org.sonatype.nexus.bootstrap.jetty.JettyServer$JettyMainThread.run(JettyServer.java:247) [nexus-bootstrap-2.11.3-01.jar:2.11.3-01]
+Caused by: java.lang.Exception: default.plexus.cipher.encryptedStringCorruptedStructure
+at org.sonatype.security.ldap.upgrade.cipher.DefaultPlexusCipher.decrypt(DefaultPlexusCipher.java:172) ~[nexus-ldap-realm-plugin-2.11.3-01/:na]
+```
+### LDAP_PORT Error
+**SOLVED** <br>
 Nexus can be deployed without errors when LDAP is disabled. When LDAP is enabled, the following error occurs:
 ```
 1) Error injecting constructor, org.sonatype.nexus.configuration.ModelUtils$CorruptModelException: Model corruptedUnable to parse element 'port', must be an integer (position: END_TAG seen ...<port>tcp://172.30.217.255:389</port>... @11:42) caused by: java.lang.NumberFormatException: For input string: "tcp://172.30.217.255:389"
