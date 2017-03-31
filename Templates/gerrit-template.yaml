@@ -159,7 +159,7 @@ objects:
             value: ${LDAP_USERNAME}
           - name: LDAP_PASSWORD
             value: ${LDAP_PASSWORD}
-          image: accenture/adop-gerrit:0.1.2
+          image: clrxm/adop-gerrit:0.1.2
           imagePullPolicy: Always
           name: ${GERRIT_NAME}
           resources: {}
@@ -261,11 +261,11 @@ parameters:
   name: DB_HOSTNAME
   required: true
 - description: "TODO"
-  value: "gerrit"
+  value: "adop"
   name: GERRIT_PASSWORD
   required: false
 - description: "TODO"
-  value: "jenkins"
+  value: "adop"
   name: JENKINS_PASSWORD
   required: false
 - description: "TODO"

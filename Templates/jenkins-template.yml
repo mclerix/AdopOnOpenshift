@@ -239,10 +239,6 @@ parameters:
   name: SUB_DOMAIN
   required: true
 - description: ""
-  value: "0.1.1"
-  name: ADOP_PLATFORM_MANAGEMENT_VERSION
-  required: true
-- description: ""
   value: "--prefix=/jenkins"
   name: JENKINS_OPTS
   required: true
@@ -295,11 +291,11 @@ parameters:
   required: false
   name: LDAP_GROUP_NAME_ADMIN
 - description: ""
-  value: "admin"
+  value: "adop"
   required: false
   name: INITIAL_ADMIN_USER
 - description: ""
-  value: "Jpk66g63ZifGYIcShSGM"
+  value: "adop"
   required: false
   name: INITIAL_ADMIN_PASSWORD
 - description: ""
@@ -315,7 +311,7 @@ parameters:
   name: GERRIT_JENKINS_USERNAME
   required: true
 - description: ""
-  value: "jenkins"
+  value: "adop"
   name: GERRIT_JENKINS_PASSWORD
   required: true
 - description: ""
@@ -323,7 +319,7 @@ parameters:
   name: SONAR_ACCOUNT_LOGIN
   required: true
 - description: ""
-  value: "jenkins"
+  value: "adop"
   name: SONAR_ACCOUNT_PASSWORD
   required: true
 - description: ""
