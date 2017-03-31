@@ -222,11 +222,7 @@ The following error occurs after trying to relaunch sensu-client service:
 ```
 
 ### sensu-uchiwa
-Sensu-uchiwa can't connect to sensu-api (Actually, Service is not running). However, the web interface is accessible.
-```
-{"timestamp":"2017-03-23T09:15:13.41385771Z","level":"warn","message":"GET http://sensu-api:4567/stashes returned: Get http://sensu-api:4567/stashes: dial tcp 172.30.201.20:4567: getsockopt: no route to host"}
-{"timestamp":"2017-03-23T09:15:13.413886253Z","level":"warn","message":"Connection failed to the datacenter Sensu"}
-```
+WORKS. Should launch after all the other sensu components.
 
 ## Sonar
 ### sonar-mysql
