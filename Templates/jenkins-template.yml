@@ -38,84 +38,92 @@ objects:
           - name: jenkins
             mountPath: /var/jenkins_home
           env:
-          - name: INITIAL_ADMIN_PASSWORD
-            value: ${INITIAL_ADMIN_PASSWORD}
-          - name: INITIAL_ADMIN_USER
-            value: ${INITIAL_ADMIN_USER}
-          - name: LDAP_MANAGER_DN
-            value: ${LDAP_MANAGER_DN}
-          - name: LDAP_GROUP_SEARCH_FILTER
-            value: ""
-          - name: LDAP_MAIL_ADDRESS_ATTRIBUTE_NAME
-            value: ${LDAP_MAIL_ADDRESS_ATTRIBUTE_NAME}
-          - name: LDAP_GROUP_SEARCH_BASE
-            value: ${LDAP_GROUP_SEARCH_BASE}
+          - name: JENKINS_OPTS
+            value: "--prefix=/jenkins"
+          - name: ROOT_URL
+            value: http://${JENKINS_NAME}.${SUB_DOMAIN}:8080/jenkins
           - name: LDAP_SERVER
             value: ${LDAP_SERVER}
-          - name: LDAP_DISPLAY_NAME_ATTRIBUTE_NAME
-            value: ${LDAP_DISPLAY_NAME_ATTRIBUTE_NAME}
-          - name: LDAP_USER_SEARCH
-            value: ${LDAP_USER_SEARCH}
-          - name: LDAP_DISABLE_MAIL_ADDRESS_RESOLVER
-            value: ${LDAP_DISABLE_MAIL_ADDRESS_RESOLVER}
-          - name: LDAP_MANAGER_PASSWORD
-            value: ${LDAP_MANAGER_PASSWORD}
-          - name: LDAP_USER_SEARCH_BASE
-            value: ${LDAP_USER_SEARCH_BASE}
-          - name: LDAP_GROUP_MEMBERSHIP_FILTER
-            value: ""
           - name: LDAP_ROOTDN
             value: ${LDAP_ROOTDN}
+          - name: LDAP_USER_SEARCH_BASE
+            value: ${LDAP_USER_SEARCH_BASE}
+          - name: LDAP_USER_SEARCH
+            value: ${LDAP_USER_SEARCH}
+          - name: LDAP_GROUP_SEARCH_BASE
+            value: ${LDAP_GROUP_SEARCH_BASE}
+          - name: LDAP_GROUP_SEARCH_FILTER
+            value: ""
+          - name: LDAP_GROUP_MEMBERSHIP_FILTER
+            value: ""
+          - name: LDAP_MANAGER_DN
+            value: ${LDAP_MANAGER_DN}
+          - name: LDAP_MANAGER_PASSWORD
+            value: ${LDAP_MANAGER_PASSWORD}
+          - name: LDAP_INHIBIT_INFER_ROOTDN
+            value: ${LDAP_INHIBIT_INFER_ROOTDN}
+          - name: LDAP_DISABLE_MAIL_ADDRESS_RESOLVER
+            value: ${LDAP_DISABLE_MAIL_ADDRESS_RESOLVER}
+          - name: LDAP_DISPLAY_NAME_ATTRIBUTE_NAME
+            value: ${LDAP_DISPLAY_NAME_ATTRIBUTE_NAME}
+          - name: LDAP_MAIL_ADDRESS_ATTRIBUTE_NAME
+            value: ${LDAP_MAIL_ADDRESS_ATTRIBUTE_NAME}
+          - name: LDAP_GROUP_NAME_ADMIN
+            value: ${LDAP_GROUP_NAME_ADMIN}
+          - name: INITIAL_ADMIN_USER
+            value: ${INITIAL_ADMIN_USER}
+          - name: INITIAL_ADMIN_PASSWORD
+            value: ${INITIAL_ADMIN_PASSWORD}
+          - name: GERRIT_HOST_NAME
+            value: ${GERRIT_HOST_NAME}
+          - name: GERRIT_FRONT_END_URL
+            value: http://${GERRIT_HOST_NAME}:8080/gerrit
           - name: GERRIT_JENKINS_USERNAME
             value: ${GERRIT_JENKINS_USERNAME}
           - name: GERRIT_JENKINS_PASSWORD
             value: ${GERRIT_JENKINS_PASSWORD}
-          - name: GERRIT_FRONT_END_URL
-            value: http://${GERRIT_HOST_NAME}:8080/gerrit
-          - name: GERRIT_HOST_NAME
-            value: ${GERRIT_HOST_NAME}
-          - name: SONAR_ACCOUNT_PASSWORD
-            value: ${SONAR_ACCOUNT_PASSWORD}
-          - name: SONAR_ADDITIONAL_PROPS
-            value: ""
           - name: SONAR_SERVER_URL
             value: http://sonar:9000/sonar/
+          - name: SONAR_ACCOUNT_LOGIN
+            value: ${SONAR_ACCOUNT_LOGIN}
+          - name: SONAR_ACCOUNT_PASSWORD
+            value: ${SONAR_ACCOUNT_PASSWORD}
           - name: SONAR_DB_URL
             value: jdbc:mysql://sonar-mysql:3306/sonar?useUnicode=true&amp;characterEncoding=utf8
           - name: SONAR_DB_LOGIN
             value: ${SONAR_DB_LOGIN}
           - name: SONAR_DB_PASSWORD
             value: ${SONAR_DB_PASSWORD}
-          - name: SONAR_ACCOUNT_LOGIN
-            value: ${SONAR_ACCOUNT_LOGIN}
           - name: SONAR_PLUGIN_VERSION
+            value: ""
+          - name: SONAR_ADDITIONAL_PROPS
             value: ""
           - name: SONAR_RUNNER_VERSION
             value: "2.4"
-          - name: DOCKER_HOST
-            value: ${DOCKER_HOST}
-          - name: ADOP_PLATFORM_MANAGEMENT_VERSION
-            value: 0.1.1
-          - name: ROOT_URL
-            value: http://${JENKINS_NAME}.${SUB_DOMAIN}:8080/jenkins
-          - name: JENKINS_OPTS
-            value: ${JENKINS_OPTS}
-          - name: NODEJS_GLOBAL_PACKAGES
-            value: grunt-cli@~0.1.13 bower@~1.3.12 plato@~1.2.1
-          - name: NODEJS_VERSION
-            value: 0.12.2
-          - name: NODEJS_PACKAGES_REFRESH_HOURS
-            value: "72"
-          - name: MAVEN_VERSION
-            value: 3.0.5
           - name: ANT_VERSION
             value: 1.9.4
-          - name: DOCKER_CLIENT_CERT_PATH
-            value: ${DOCKER_CLIENT_CERT_PATH}
-          - name: GIT_GLOBAL_CONFIG_EMAIL
-            value: ${GIT_GLOBAL_CONFIG_EMAIL}
+          - name: MAVEN_VERSION
+            value: 3.0.5
+          - name: NODEJS_VERSION
+            value: 0.12.2
+          - name: NODEJS_GLOBAL_PACKAGES
+            value: grunt-cli@~0.1.13 bower@~1.3.12 plato@~1.2.1
+          - name: NODEJS_PACKAGES_REFRESH_HOURS
+            value: "72"
           - name: GIT_GLOBAL_CONFIG_NAME
             value: ${GIT_GLOBAL_CONFIG_NAME}
+          - name: GROOVY_VERSION
+            value: "2.4.8"
+          - name: GIT_GLOBAL_CONFIG_EMAIL
+            value: ${GIT_GLOBAL_CONFIG_EMAIL}
+          - name: DOCKER_TLS_VERIFY
+            value: "false"
+          - name: DOCKER_HOST
+            value: ${DOCKER_HOST}
+          - name: DOCKER_CLIENT_CERT_PATH
+            value: ${DOCKER_CLIENT_CERT_PATH}
+          - name: CARTRIDGE_SOURCES
+            value: ${CARTRIDGE_SOURCES}
           image: accenture/adop-jenkins:0.1.5
           imagePullPolicy: Always
           name: ${JENKINS_NAME}
@@ -283,6 +291,10 @@ parameters:
   required: false
   name: LDAP_MAIL_ADDRESS_ATTRIBUTE_NAME
 - description: ""
+  value: "administrators"
+  required: false
+  name: LDAP_GROUP_NAME_ADMIN
+- description: ""
   value: "admin"
   required: false
   name: INITIAL_ADMIN_USER
@@ -342,3 +354,7 @@ parameters:
   value: "//root/.docker/"
   required: false
   name: DOCKER_CLIENT_CERT_PATH
+- description: ""
+  value: "//root/.docker/"
+  required: false
+  name: CARTRIDGE_SOURCES

@@ -46,6 +46,8 @@ objects:
             value: ${LDAP_ENABLED}
           - name: LDAP_URL
             value: ${LDAP_URL}
+          - name: LDAP_PORT
+            value: ${LDAP_PORT}
           - name: LDAP_BIND_DN
             value: ${LDAP_BIND_DN}
           - name: LDAP_USER_PASSWORD_ATTRIBUTE
@@ -125,6 +127,10 @@ parameters:
 - description: "TODO"
   value: "ldap"
   name: LDAP_URL
+  required: true
+- description: "TODO"
+  value: "389"
+  name: LDAP_PORT
   required: true
 - description: "TODO"
   value: "cn=admin,dc=ldap,dc=example,dc=com"
