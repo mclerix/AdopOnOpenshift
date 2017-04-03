@@ -54,7 +54,7 @@ objects:
             value: ${LDAP_USER_ID_ATTRIBUTE}
           - name: LDAP_USER_OBJECT_CLASS
             value: ${LDAP_USER_OBJECT_CLASS}
-          image: accenture/adop-nginx:0.3.0
+          image: clrxm/adop-nginx:0.1.0
           imagePullPolicy: Always
           name: ${PROXY_NAME}
           resources: {}
@@ -113,8 +113,9 @@ objects:
     to:
       kind: Service
       name: ${PROXY_NAME}
+      weight: 100
   port:
-    targetPort: 80
+    targetPort: http
   wildcardPolicy: None
 parameters:
 - description: "TODO"

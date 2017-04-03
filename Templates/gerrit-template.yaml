@@ -84,19 +84,6 @@ objects:
   status:
     loadBalancer: {}
 - apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${GERRIT_NAME}-mysql
-    labels:
-      app: ${GERRIT_NAME}-mysql
-  spec:
-    host: ${GERRIT_NAME}-mysql.cloudapps.example.com
-    to:
-      kind: Service
-      name: ${GERRIT_NAME}-mysql
-  port:
-    port: 3306
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${GERRIT_NAME}
@@ -193,23 +180,6 @@ objects:
       port: 8080
       targetPort: 8080
       protocol: TCP
-    selector:
-      deploymentconfig: ${GERRIT_NAME}
-      container: ${GERRIT_NAME}
-      app: adop-${GERRIT_NAME}
-    sessionAffinity: None
-    type: ClusterIP
-  status:
-    loadBalancer: {}
-- apiVersion: v1
-  kind: Service
-  metadata:
-    creationTimestamp: null
-    name: ${GERRIT_NAME}-ssh
-    labels:
-      service: ${GERRIT_NAME}-ssh
-  spec:
-    ports:
     - name: ssh
       port: 29418
       targetPort: 29418
@@ -234,7 +204,8 @@ objects:
       kind: Service
       name: ${GERRIT_NAME}
   port:
-    port: 8080
+    targetPort: http
+  wildcardPolicy: None
 parameters:
 - description: "TODO"
   value: "gerrit"

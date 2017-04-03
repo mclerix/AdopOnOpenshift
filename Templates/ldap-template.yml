@@ -95,17 +95,6 @@ objects:
   status:
     loadBalancer: {}
 - apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${LDAP_NAME}
-    labels:
-      app: ${LDAP_NAME}
-  spec:
-    host: ${LDAP_NAME}.cloudapps.example.com
-    to:
-      kind: Service
-      name: ${LDAP_NAME}
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${LDAP_NAME}-ltb

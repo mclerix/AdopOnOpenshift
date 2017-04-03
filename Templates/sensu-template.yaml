@@ -163,17 +163,6 @@ objects:
   status:
     loadBalancer: {}
 - apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${SENSU_NAME}-api
-    labels:
-      app: ${SENSU_NAME}-api
-  spec:
-    host: ${SENSU_NAME}-api.cloudapps.example.com
-    to:
-      kind: Service
-      name: ${SENSU_NAME}-api
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${SENSU_NAME}-server
@@ -260,20 +249,6 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-- apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${SENSU_NAME}-server
-    labels:
-      app: ${SENSU_NAME}-server
-  spec:
-    host: ${SENSU_NAME}-server.cloudapps.example.com
-    to:
-      kind: Service
-      name: ${SENSU_NAME}-server
-  port:
-    targetPort: 3000
-  wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -365,20 +340,6 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-- apiVersion: v1
-  kind: Route
-  metadata:
-    name: ${SENSU_NAME}-client
-    labels:
-      app: ${SENSU_NAME}-client
-  spec:
-    host: ${SENSU_NAME}-client.cloudapps.example.com
-    to:
-      kind: Service
-      name: ${SENSU_NAME}-client
-  port:
-    targetPort: 3000
-  wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:

@@ -104,7 +104,7 @@ Content of ``gc_log`` file: <br>
 `2017-03-22 13:53:29,570] INFO  : Ignoring missing gc schedule configuration` <br>
 `httpd_log` & `sshd_log` do not display any errors <br>
  *It seems that $GERRIT_HOME/adop_scripts/create_user.sh tries to curl an address that does not exist and can't create users even if Gerrit is up and running.*
- > This problem has been solved by modifying the create_yser.sh script. /gerrit has been removed from the login URL in order to contact the right endpoint
+ > This problem has been solved by modifying the create_user.sh script. /gerrit has been removed from the login URL in order to reach the right endpoint
 
  **CRITICAL** Once Gerrit is up and running and tries to create users, the following error appears for each user:
  ```
@@ -256,6 +256,7 @@ WORKS. Default user admin/admin
 Currently, Sonar is the only container that is able to reach LDAP.
 
 ## Jenkins
+WEB UI is up.
 Errors during installation:
 * **CRITICAL** Can't access Gerrit
 ```
@@ -291,50 +292,75 @@ java.lang.NumberFormatException: For input string: "tcp://172.30.75.45:29418"
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
 	at java.lang.Thread.run(Thread.java:745)
 ```
-* **CRITICAL** Can't access ldap
+* **CRITICAL** Can't authenticate to LDAP server
 ```
-WARNING: Failed to run script file:/var/jenkins_home/init.groovy.d/adop_ldap.groovy
-java.lang.NullPointerException: Cannot invoke method toBoolean() on null object
-	at org.codehaus.groovy.runtime.NullObject.invokeMethod(NullObject.java:77)
-	at org.codehaus.groovy.runtime.callsite.PogoMetaClassSite.call(PogoMetaClassSite.java:45)
-	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:42)
-	at org.codehaus.groovy.runtime.callsite.NullCallSite.call(NullCallSite.java:32)
-	at org.codehaus.groovy.runtime.callsite.CallSiteArray.defaultCall(CallSiteArray.java:42)
-	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:108)
-	at org.codehaus.groovy.runtime.callsite.AbstractCallSite.call(AbstractCallSite.java:112)
-	at adop_ldap.run(adop_ldap.groovy:27)
-	at groovy.lang.GroovyShell.evaluate(GroovyShell.java:580)
-	at jenkins.util.groovy.GroovyHookScript.execute(GroovyHookScript.java:122)
-	at jenkins.util.groovy.GroovyHookScript.execute(GroovyHookScript.java:113)
-	at jenkins.util.groovy.GroovyHookScript.run(GroovyHookScript.java:96)
-	at hudson.init.impl.GroovyInitScript.init(GroovyInitScript.java:42)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:497)
-	at hudson.init.TaskMethodFinder.invoke(TaskMethodFinder.java:106)
-	at hudson.init.TaskMethodFinder$TaskImpl.run(TaskMethodFinder.java:176)
-	at org.jvnet.hudson.reactor.Reactor.runTask(Reactor.java:282)
-	at jenkins.model.Jenkins$7.runTask(Jenkins.java:904)
-	at org.jvnet.hudson.reactor.Reactor$2.run(Reactor.java:210)
-	at org.jvnet.hudson.reactor.Reactor$Node.run(Reactor.java:117)
+Mar 31, 2017 2:47:44 PM org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2 handleBindException
+WARNING: Failed to bind to LDAP: userDncn=jenkins,ou=people,dc=ldap,dc=example,dc=com  username=jenkins
+javax.naming.AuthenticationException: [LDAP: error code 49 - Invalid Credentials]
+	at com.sun.jndi.ldap.LdapCtx.mapErrorCode(LdapCtx.java:3135)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:3081)
+	at com.sun.jndi.ldap.LdapCtx.processReturnCode(LdapCtx.java:2883)
+	at com.sun.jndi.ldap.LdapCtx.connect(LdapCtx.java:2797)
+	at com.sun.jndi.ldap.LdapCtx.<init>(LdapCtx.java:319)
+	at com.sun.jndi.ldap.LdapCtxFactory.getUsingURL(LdapCtxFactory.java:192)
+	at com.sun.jndi.ldap.LdapCtxFactory.getUsingURLs(LdapCtxFactory.java:210)
+	at com.sun.jndi.ldap.LdapCtxFactory.getLdapCtxInstance(LdapCtxFactory.java:153)
+	at com.sun.jndi.ldap.LdapCtxFactory.getInitialContext(LdapCtxFactory.java:83)
+	at javax.naming.spi.NamingManager.getInitialContext(NamingManager.java:684)
+	at javax.naming.InitialContext.getDefaultInitCtx(InitialContext.java:313)
+	at javax.naming.InitialContext.init(InitialContext.java:244)
+	at javax.naming.InitialContext.<init>(InitialContext.java:216)
+	at javax.naming.directory.InitialDirContext.<init>(InitialDirContext.java:101)
+	at org.acegisecurity.ldap.DefaultInitialDirContextFactory.connect(DefaultInitialDirContextFactory.java:180)
+	at org.acegisecurity.ldap.DefaultInitialDirContextFactory.newInitialDirContext(DefaultInitialDirContextFactory.java:261)
+	at org.acegisecurity.ldap.LdapTemplate.execute(LdapTemplate.java:123)
+	at org.acegisecurity.ldap.LdapTemplate.retrieveEntry(LdapTemplate.java:165)
+	at org.acegisecurity.providers.ldap.authenticator.BindAuthenticator.bindWithDn(BindAuthenticator.java:87)
+	at org.acegisecurity.providers.ldap.authenticator.BindAuthenticator.authenticate(BindAuthenticator.java:72)
+	at org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2.authenticate(BindAuthenticator2.java:49)
+	at org.acegisecurity.providers.ldap.LdapAuthenticationProvider.retrieveUser(LdapAuthenticationProvider.java:233)
+	at org.acegisecurity.providers.dao.AbstractUserDetailsAuthenticationProvider.authenticate(AbstractUserDetailsAuthenticationProvider.java:122)
+	at org.acegisecurity.providers.ProviderManager.doAuthentication(ProviderManager.java:200)
+	at org.acegisecurity.AbstractAuthenticationManager.authenticate(AbstractAuthenticationManager.java:47)
+	at hudson.security.LDAPSecurityRealm$LDAPAuthenticationManager.authenticate(LDAPSecurityRealm.java:786)
+	at jenkins.security.BasicHeaderRealPasswordAuthenticator.authenticate(BasicHeaderRealPasswordAuthenticator.java:55)
+	at jenkins.security.BasicHeaderProcessor.doFilter(BasicHeaderProcessor.java:79)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at org.acegisecurity.context.HttpSessionContextIntegrationFilter.doFilter(HttpSessionContextIntegrationFilter.java:249)
+	at hudson.security.HttpSessionContextIntegrationFilter2.doFilter(HttpSessionContextIntegrationFilter2.java:67)
+	at hudson.security.ChainedServletFilter$1.doFilter(ChainedServletFilter.java:87)
+	at hudson.security.ChainedServletFilter.doFilter(ChainedServletFilter.java:76)
+	at hudson.security.HudsonFilter.doFilter(HudsonFilter.java:168)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1482)
+	at org.kohsuke.stapler.compression.CompressionFilter.doFilter(CompressionFilter.java:49)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1482)
+	at hudson.util.CharacterEncodingFilter.doFilter(CharacterEncodingFilter.java:81)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1482)
+	at org.kohsuke.stapler.DiagnosticThreadNameFilter.doFilter(DiagnosticThreadNameFilter.java:30)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1474)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:499)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:137)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:533)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:231)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1086)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:428)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:193)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1020)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:135)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:116)
+	at org.eclipse.jetty.server.Server.handle(Server.java:370)
+	at org.eclipse.jetty.server.AbstractHttpConnection.handleRequest(AbstractHttpConnection.java:489)
+	at org.eclipse.jetty.server.AbstractHttpConnection.headerComplete(AbstractHttpConnection.java:949)
+	at org.eclipse.jetty.server.AbstractHttpConnection$RequestHandler.headerComplete(AbstractHttpConnection.java:1011)
+	at org.eclipse.jetty.http.HttpParser.parseNext(HttpParser.java:644)
+	at org.eclipse.jetty.http.HttpParser.parseAvailable(HttpParser.java:235)
+	at org.eclipse.jetty.server.AsyncHttpConnection.handle(AsyncHttpConnection.java:82)
+	at org.eclipse.jetty.io.nio.SelectChannelEndPoint.handle(SelectChannelEndPoint.java:668)
+	at org.eclipse.jetty.io.nio.SelectChannelEndPoint$1.run(SelectChannelEndPoint.java:52)
+	at winstone.BoundedExecutorService$1.run(BoundedExecutorService.java:77)
 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-	at java.lang.Thread.run(Thread.java:745)
-```
-* **CRITICAL** Installation stuck at the step Saving changes.
-```
-...
---> Configuring Ant
---> Configuring Maven
---> Configuring NodeJS
---> Configuring SonarQube
---> Configuring SonarRunner
---> setting agent port for jnlp
-Enabling role based authorisation strategy...
-Admin role created...OK
-Read role created...OK
-Saving changes.
+at java.lang.Thread.run(Thread.java:745)
 ```
 
 ## Selenium

@@ -174,13 +174,15 @@ objects:
     name: ${JENKINS_NAME}
     labels:
       app: ${JENKINS_NAME}
+      service: ${JENKINS_NAME}
   spec:
     host: ${JENKINS_NAME}.cloudapps.example.com
     to:
       kind: Service
       name: ${JENKINS_NAME}
+      weight: 100
   port:
-    targetPort: 8080
+    targetPort: http-jenkins
   wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
@@ -218,6 +220,8 @@ objects:
             value: ${SLAVE_EXECUTORS}
           - name: SLAVE_LABELS
             value: "aws ldap java8 docker"
+          - name: SWARM_PASSWORD
+            value: ${SWARM_PASSWORD}
           image: accenture/adop-jenkins-slave:0.1.4
           imagePullPolicy: Always
           name: ${JENKINS_NAME}-slave
@@ -354,3 +358,7 @@ parameters:
   value: "//root/.docker/"
   required: false
   name: CARTRIDGE_SOURCES
+- description: ""
+  value: "jenkins"
+  required: false
+  name: SWARM_PASSWORD
