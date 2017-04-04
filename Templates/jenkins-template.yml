@@ -77,7 +77,7 @@ objects:
           - name: GERRIT_HOST_NAME
             value: ${GERRIT_HOST_NAME}
           - name: GERRIT_FRONT_END_URL
-            value: http://${GERRIT_HOST_NAME}:8080/gerrit
+            value: http://${GERRIT_HOST_NAME}:8080
           - name: GERRIT_JENKINS_USERNAME
             value: ${GERRIT_JENKINS_USERNAME}
           - name: GERRIT_JENKINS_PASSWORD
@@ -355,7 +355,7 @@ parameters:
   required: false
   name: DOCKER_CLIENT_CERT_PATH
 - description: ""
-  value: "//root/.docker/"
+  value: "https://raw.githubusercontent.com/Accenture/adop-cartridges/master/cartridges.yml"
   required: false
   name: CARTRIDGE_SOURCES
 - description: ""
