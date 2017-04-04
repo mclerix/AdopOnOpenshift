@@ -10,6 +10,83 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
+    name: ${SONAR_NAME}-mysql
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${SONAR_NAME}-mysql
+      container: ${SONAR_NAME}-mysql
+      app: adop-${SONAR_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${SONAR_NAME}-mysql
+          container: ${SONAR_NAME}-mysql
+          app: adop-${SONAR_NAME}
+      spec:
+        containers:
+        - volumeMounts:
+          - name: sonar-mysql-data
+            mountPath: /var/lib/mysql
+          env:
+          - name: MYSQL_DATABASE
+            value: ${MYSQL_DATABASE}
+          - name: MYSQL_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          - name: MYSQL_ROOT_PASSWORD
+            value: ${MYSQL_ROOT_PASSWORD}
+          - name: MYSQL_USER
+            value: ${MYSQL_USER}
+          image: mysql:5.6.25
+          imagePullPolicy: Always
+          name: ${SONAR_NAME}-mysql
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: mysql
+            containerPort: 3306
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+        volumes:
+        - name: sonar-mysql-data
+          emptyDir: {}
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${SONAR_NAME}-mysql
+    labels:
+      service: ${SONAR_NAME}-mysql
+  spec:
+    ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+      protocol: TCP
+    selector:
+      deploymentconfig: ${SONAR_NAME}-mysql
+      container: ${SONAR_NAME}-mysql
+      app: adop-${SONAR_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
     name: ${SONAR_NAME}
   spec:
     replicas: 1
@@ -182,7 +259,15 @@ parameters:
   required: true
 - description: "TODO"
   value: "sonar"
+  name: MYSQL_DATABASE
+  required: false
+- description: "TODO"
+  value: "sonar"
   name: MYSQL_PASSWORD
+  required: true
+- description: "TODO"
+  value: "sonar"
+  name: MYSQL_ROOT_PASSWORD
   required: true
 - description: "TODO"
   value: "sonar"

@@ -10,6 +10,82 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
+    name: ${GERRIT_NAME}-mysql
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${GERRIT_NAME}-mysql
+      container: ${GERRIT_NAME}-mysql
+      app: adop-${GERRIT_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${GERRIT_NAME}-mysql
+          container: ${GERRIT_NAME}-mysql
+          app: adop-${GERRIT_NAME}
+      spec:
+        containers:
+        - volumeMounts:
+          - name: gerrit-mysql-data
+            mountPath: /var/lib/mysql
+          env:
+          - name: MYSQL_DATABASE
+            value: ${MYSQL_DATABASE}
+          - name: MYSQL_PASSWORD
+            value: ${MYSQL_PASSWORD}
+          - name: MYSQL_ROOT_PASSWORD
+            value: ${MYSQL_ROOT_PASSWORD}
+          - name: MYSQL_USER
+            value: ${MYSQL_USER}
+          image: mysql:5.6.25
+          imagePullPolicy: Always
+          name: ${GERRIT_NAME}-mysql
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: gerrit-mysql
+            containerPort: 3306
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+        volumes:
+        - name: gerrit-mysql-data
+          emptyDir: {}
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${GERRIT_NAME}-mysql
+    labels:
+      service: ${GERRIT_NAME}-mysql
+  spec:
+    ports:
+    - name: gerrit-mysql
+      port: 3306
+      targetPort: 3306
+    selector:
+      deploymentconfig: ${GERRIT_NAME}-mysql
+      container: ${GERRIT_NAME}-mysql
+      app: adop-${GERRIT_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
     name: ${GERRIT_NAME}
   spec:
     replicas: 1
@@ -152,6 +228,10 @@ parameters:
 - description: "TODO"
   value: "gerrit"
   name: MYSQL_PASSWORD
+  required: false
+- description: "TODO"
+  value: "gerrit"
+  name: MYSQL_ROOT_PASSWORD
   required: true
 - description: "TODO"
   value: "gerrit"
@@ -164,32 +244,32 @@ parameters:
 - description: "TODO"
   value: "gerrit"
   name: GERRIT_PASSWORD
-  required: true
+  required: false
 - description: "TODO"
   value: "jenkins"
   name: JENKINS_PASSWORD
-  required: true
+  required: false
 - description: "TODO"
   value: "adop"
-  required: true
+  required: false
   name: INITIAL_ADMIN_USER
 - description: "TODO"
   value: "adop"
-  required: true
+  required: false
   name: INITIAL_ADMIN_PASSWORD
 - description: "TODO"
   value: "ldap:389"
-  required: true
+  required: false
   name: LDAP_SERVER
 - description: "TODO"
   value: "dc=ldap,dc=example,dc=com"
-  required: true
+  required: false
   name: LDAP_ACCOUNTBASE
 - description: "TODO"
   value: "cn=admin,dc=ldap,dc=example,dc=com"
-  required: true
+  required: false
   name: LDAP_USERNAME
 - description: "TODO"
   value: "Jpk66g63ZifGYIcShSGM"
-  required: true
+  required: false
   name: LDAP_PASSWORD

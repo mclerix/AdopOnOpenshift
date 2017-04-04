@@ -26,7 +26,13 @@ To run ADOP on Openshift, you should do the following steps.
 6. Populate Openshift with ADOP Templates <br>
 ``oc create -f Templates/``
 7. Deploy templates
-```
+
+```bash
+# Create MYSQL databases for Gerrit and Sonar using template provided by OpenShift (Could be replaced by persistent template).
+oc new-app mysql-ephemeral -p MYSQL_PASSWORD=gerrit -p MYSQL_DATABASE=gerrit -p MYSQL_USER=gerrit -p MYSQL_ROOT_PASSWORD=gerrit -p MYSQL_VERSION=5.6 -p DATABASE_SERVICE_NAME=gerrit-mysql -n adop
+
+oc new-app mysql-ephemeral -p MYSQL_PASSWORD=sonar -p MYSQL_DATABASE=sonar -p MYSQL_USER=sonar -p MYSQL_ROOT_PASSWORD=sonar -p MYSQL_VERSION=5.6 -p DATABASE_SERVICE_NAME=sonar-mysql -n adop
+
 oc new-app adop-ldap
 oc new-app adop-gerrit
 # Sensu is not deployed for now
