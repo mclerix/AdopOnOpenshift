@@ -256,11 +256,11 @@ parameters:
   name: LDAP_NAME
   required: true
 - description: "TODO"
-  value: "adop"
+  value: "Z2Vycml0"
   name: GERRIT_PASSWORD
   required: true
 - description: "TODO"
-  value: "adop"
+  value: "YWRvcA=="
   name: INITIAL_ADMIN_PASSWORD
   required: false
 - description: "TODO"
@@ -268,7 +268,7 @@ parameters:
   name: INITIAL_ADMIN_USER
   required: true
 - description: "TODO"
-  value: "adop"
+  value: "amVua2lucw=="
   name: JENKINS_PASSWORD
   required: true
 - description: "TODO"

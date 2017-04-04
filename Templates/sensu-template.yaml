@@ -535,6 +535,6 @@ parameters:
   required: false
   name: JENKINS_PREFIX
 - description: "TODO"
-  value: "proxy,gerrit,jenkins,nexus,sonarqube,sensu,kibana"
+  value: "proxy,gerrit,jenkins,nexus,sonarqube,sensu"
   required: false
   name: CLIENT_SUBSCRIPTIONS

@@ -56,7 +56,7 @@ kibana:5601 unavailable, sleeping for 2
 
 ## LDAP
 ### ldap
-**WORKS**
+**CRITICAL** Users password are not set while deploying LDAP. They have to be set afterward.<br>
 **SOLVED** Gerrit and Jenkins users are not created. All other groups and users are created. While logging into the container and trying to add user manually the following happens:
 ```
 ldapadd -H ldap://localhost -c -x -D "cn=admin,dc=ldap,dc=example,dc=com" -f "/tmp/structure.ldif" -w "Jpk66g63ZifGYIcShSGM"                                                                                                         
@@ -106,15 +106,28 @@ Content of ``gc_log`` file: <br>
  *It seems that $GERRIT_HOME/adop_scripts/create_user.sh tries to curl an address that does not exist and can't create users even if Gerrit is up and running.*
  > This problem has been solved by modifying the create_user.sh script. /gerrit has been removed from the login URL in order to reach the right endpoint
 
- **CRITICAL** Once Gerrit is up and running and tries to create users, the following error appears for each user:
+ **SOLVED** Once Gerrit is up and running and tries to create users, the following error appears for each user:
  ```
  [2017-03-31 12:16:45,504] INFO  com.google.gerrit.pgm.Daemon : Gerrit Code Review 2.10.6 ready
  Creating user: gerrit
  [2017-03-31 12:16:48,378] INFO  com.google.gerrit.httpd.auth.ldap.LdapLoginServlet : 'gerrit' failed to sign in: No such user: gerrit
  Unable to create user gerrit, response code 401, retry ... 1
 ```
+> Users where missing in LDAP
 
+**CRITICAL** Gerrit add users to Administrators group but display an error.
+```
+Adding user "jenkins" to: Administrators
+Unable to add user jenkins to group Administrators, response code 201, retry ... 1
+Testing Gerrit Connection
+Adding user "adop" to: Administrators
+Unable to add user adop to group Administrators, response code 201, retry ... 1
+Testing Jenkins Connection & Key Presence
+Jenkins or key unavailable, sleeping for 10
+Jenkins or key unavailable, sleeping for 10
+```
 ## Sensu
+Currently not deployed and removed from Proxy check routine.
 ### sensu-redis
 WORKS
 ### sensu-rabbitmq
@@ -253,12 +266,11 @@ WORKS. Should launch after all the other sensu components.
 WORKS
 ### sonar
 WORKS. Default user admin/admin
-Currently, Sonar is the only container that is able to reach LDAP.
 
 ## Jenkins
 WEB UI is up.
 Errors during installation:
-* **CRITICAL** Can't access Gerrit
+* **SOLVED** Can't access Gerrit
 ```
 WARNING: Failed to run script file:/var/jenkins_home/init.groovy.d/adop_gerrit.groovy
 java.lang.NumberFormatException: For input string: "tcp://172.30.75.45:29418"
@@ -292,7 +304,7 @@ java.lang.NumberFormatException: For input string: "tcp://172.30.75.45:29418"
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
 	at java.lang.Thread.run(Thread.java:745)
 ```
-* **CRITICAL** Can't authenticate to LDAP server
+* **CRITICAL** Can't authenticate to LDAP server but can connect with adop/adop account to the web UI.
 ```
 Mar 31, 2017 2:47:44 PM org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2 handleBindException
 WARNING: Failed to bind to LDAP: userDncn=jenkins,ou=people,dc=ldap,dc=example,dc=com  username=jenkins
@@ -364,7 +376,7 @@ at java.lang.Thread.run(Thread.java:745)
 ```
 
 ## Selenium
-Selenium-hub, selenium-node-firefox & selenium-node-chrome components WORK
+**WORKS** Selenium-hub, selenium-node-firefox & selenium-node-chrome components WORK
 
 ## Nexus
 **WORKS**
@@ -514,7 +526,7 @@ Nexus can be deployed without errors when LDAP is disabled. When LDAP is enabled
 while locating java.lang.Object annotated with *
 ```
 Providing the IP address of the container running LDAP as LDAP_URL does not solve the issue in this case. <br>
-> related to the pull request: https://github.com/janwillies/adop-docker-compose/blob/kubernetes-support. A new image has been designed to run nexus (willies/adop-nexus).
+> LDAP_PORT was not set up.
 
 # TODO
 

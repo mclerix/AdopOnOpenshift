@@ -232,11 +232,11 @@ parameters:
   name: DB_HOSTNAME
   required: true
 - description: "TODO"
-  value: "adop"
+  value: "gerrit"
   name: GERRIT_PASSWORD
   required: false
 - description: "TODO"
-  value: "adop"
+  value: "jenkins"
   name: JENKINS_PASSWORD
   required: false
 - description: "TODO"

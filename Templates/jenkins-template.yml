@@ -315,7 +315,7 @@ parameters:
   name: GERRIT_JENKINS_USERNAME
   required: true
 - description: ""
-  value: "adop"
+  value: "jenkins"
   name: GERRIT_JENKINS_PASSWORD
   required: true
 - description: ""
@@ -323,7 +323,7 @@ parameters:
   name: SONAR_ACCOUNT_LOGIN
   required: true
 - description: ""
-  value: "adop"
+  value: "jenkins"
   name: SONAR_ACCOUNT_PASSWORD
   required: true
 - description: ""
