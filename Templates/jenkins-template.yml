@@ -37,6 +37,16 @@ objects:
         - volumeMounts:
           - name: jenkins
             mountPath: /var/jenkins_home
+          readinessProbe:
+            httpGet:
+              path: /jenkins
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
           env:
           - name: JENKINS_OPTS
             value: "--prefix=/jenkins"

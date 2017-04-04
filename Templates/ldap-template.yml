@@ -39,6 +39,14 @@ objects:
             mountPath: /var/lib/ldap
           - name: static
             mountPath: /etc/ldap
+          readinessProbe:
+            tcpSocket:
+              port: 389
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
           env:
           - name: INITIAL_ADMIN_PASSWORD
             value: ${INITIAL_ADMIN_PASSWORD}

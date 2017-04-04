@@ -559,4 +559,6 @@ Providing the IP address of the container running LDAP as LDAP_URL does not solv
 * Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/).
 * Identify Required parameters.
 * Write parameters' description.
+
 * Write Readiness and liveness probes for ADOP containers.
+* Write script to load docker images on hosts

@@ -39,6 +39,16 @@ objects:
           name: ${SELENIUM_NAME}-hub
           resources: {}
           terminationMessagePath: /dev/termination-log
+          readinessProbe:
+            httpGet:
+              path: /grid/console
+              port: 4444
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
         ports:
           - name: selenium-hub
             containerPort: 4444
