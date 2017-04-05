@@ -132,7 +132,7 @@ objects:
             value: ${DOCKER_CLIENT_CERT_PATH}
           - name: CARTRIDGE_SOURCES
             value: ${CARTRIDGE_SOURCES}
-          image: accenture/adop-jenkins:0.1.5
+          image: accenture/adop-jenkins:0.2.6
           imagePullPolicy: Always
           name: ${JENKINS_NAME}
           resources: {}
@@ -227,7 +227,7 @@ objects:
           - name: SLAVE_EXECUTORS
             value: ${SLAVE_EXECUTORS}
           - name: SLAVE_LABELS
-            value: "aws ldap java8 docker"
+            value: "aws openshift ldap java8 docker"
           - name: SWARM_PASSWORD
             value: ${SWARM_PASSWORD}
           image: accenture/adop-jenkins-slave:0.1.4
