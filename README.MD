@@ -49,7 +49,7 @@ After that, the ADOP stack should be deployed and available in your Openshift cl
 
 # Errors identified
 
-**/!\ an ELK stack is required by ADOP.**
+**/!\ an ELK stack is required by ADOP.** Currently, ADOP can run without an ELK stack.
 
 ## Proxy
 **WARNING** Gerrit and Selenium links are broken.

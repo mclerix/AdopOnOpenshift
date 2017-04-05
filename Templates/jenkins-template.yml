@@ -38,10 +38,8 @@ objects:
           - name: jenkins
             mountPath: /var/jenkins_home
           readinessProbe:
-            httpGet:
-              path: /jenkins
+            tcpSocket:
               port: 8080
-              scheme: HTTP
             initialDelaySeconds: 15
             timeoutSeconds: 5
             periodSeconds: 10
