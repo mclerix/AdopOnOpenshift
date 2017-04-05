@@ -82,7 +82,7 @@ objects:
             value: ${LDAP_USERNAME}
           - name: LDAP_PASSWORD
             value: ${LDAP_PASSWORD}
-          image: accenture/adop-gerrit:0.1.3
+          image: clrxm/adop-gerrit:0.1.2
           imagePullPolicy: Always
           name: ${GERRIT_NAME}
           resources: {}
