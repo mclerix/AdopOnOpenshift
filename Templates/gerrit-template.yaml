@@ -133,7 +133,7 @@ objects:
     labels:
       app: ${GERRIT_NAME}
   spec:
-    host: ${GERRIT_NAME}.cloudapps.example.com
+    host: ${GERRIT_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${GERRIT_NAME}
@@ -144,6 +144,10 @@ parameters:
 - description: "TODO"
   value: "gerrit"
   name: GERRIT_NAME
+  required: true
+- description: "TODO"
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
   required: true
 - description: "TODO"
   value: "gerrit"

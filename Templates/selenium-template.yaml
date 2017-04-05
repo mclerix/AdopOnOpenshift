@@ -86,7 +86,7 @@ objects:
     labels:
       app: ${SELENIUM_NAME}-hub
   spec:
-    host: ${SELENIUM_NAME}-hub.cloudapps.example.com
+    host: ${SELENIUM_NAME}-hub.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${SELENIUM_NAME}-hub
@@ -248,4 +248,8 @@ parameters:
 - description: "TODO"
   value: "selenium"
   name: SELENIUM_NAME
+  required: true
+- description: "TODO"
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
   required: true

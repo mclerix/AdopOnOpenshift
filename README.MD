@@ -8,7 +8,7 @@
 * Make sure you have at least 30 Gi available in your docker devicemapper for ADOP images
 
 # How to run ADOP on OpenShift
-
+## Manually
 To run ADOP on Openshift, you should do the following steps.
 
 1. Log in as system:admin on your openshift ClusterFirst <br>
@@ -45,9 +45,18 @@ oc new-app adop-proxy
 ```
 *The templates are also available in the OpenShift Catalog and can be found with a search (ex: adop)*
 
+## With bash script
+
+1. Log in as system:admin on your OpenShift Cluster<br>
+``oc login -u system:admin``
+2. Download script `deploy_adop.sh` under /Scripts
+3. Execute `deploy_adop.sh` <br>
+``bash ./deploy_adop.sh``<br>
+
+
 After that, the ADOP stack should be deployed and available in your Openshift cluster with the errors identified below.
 
-# Errors identified
+# Deployment Errors identified
 
 **/!\ an ELK stack is required by ADOP.** Currently, ADOP can run without an ELK stack.
 
@@ -549,16 +558,41 @@ while locating java.lang.Object annotated with *
 Providing the IP address of the container running LDAP as LDAP_URL does not solve the issue in this case. <br>
 > LDAP_PORT was not set up.
 
+# Execution Errors
+## Load_platform
+The adop-platform-management Github repository has been forked into https://github.com/clerixmaxime/adop-platform-management.git. DSL jobs have been modified to fix errors related to Gerrit. This forked repository should be used as GIT_URL parameter.
+### Without Example Workspace
+**WORKS**
+### With Example Workspace
+Error with the Job Load_platform > Generate_Example_Workspace > Example_Workspace > Project_Management > Generate_Project
+```
+Processing DSL script jobs.groovy
+[ssh-agent] Stopped.
+ERROR: (jobs.groovy, line 30) No signature of method: javaposse.jobdsl.dsl.helpers.BuildParametersContext.extensibleChoiceParameterDefinition() is applicable for argument types: (jobs$_run_closure2_closure4_closure9) values: [jobs$_run_closure2_closure4_closure9@156fd2b1]
+Finished: FAILURE
+```
+
+# ADOP & OpenShift
+## OpenShift Sync Plugin
+This plugin requires at least Jenkins 1.651.2. ADOP Jenkins is 1.609.1
+## OpenShift Pipeline Plugin
+This plugin requires at least Jenkins 1.651. ADOP Jenkins is 1.609.1
+## Kubernetes Plugin
+This plugin requires at least Jenkins 2.32.1. ADOP Jenkins is 1.609.1
+
 # TODO
 
 * Fix issues listed above.
 * Add ELK stack or synchronize with openshift-metrics.
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
-* Configure Jenkins to deploy on Openshift.
-* Configure Jenkins to sync with Openshift (Should work out-of-the-box once Openshift plugins will be installed).
-* Configure jenkins to deploy slave in Openshift instead of Docker. Currently, ADOP Jenkins is configured to with Docker Host information in order to deploy Jenkins Slave within Docker container on the host it is running on. Using Kubernetes plugin, jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/).
-* Identify Required parameters.
+* Configure Jenkins to deploy on OpenShift. (**Currently not possible** with ADOP Jenkins version)
+* Configure Jenkins to sync with Openshift (**Currently not possible** with ADOP Jenkins version).
+* Configure Jenkins to deploy slave in Openshift instead of Docker. Using Kubernetes plugin, Jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/). **Currently not possible** with ADOP Jenkins version
+* Identify Required parameters for each component.
 * Write parameters' description.
 
-* Write Readiness and liveness probes for ADOP containers.
-* Write script to load docker images on hosts
+# Done
+* Write Readiness probes for ADOP containers.
+* Write script to load docker images on hosts.
+* Write deployment script
+* Write ADOP templates

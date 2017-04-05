@@ -81,7 +81,7 @@ objects:
     labels:
       app: ${SENSU_NAME}-uchiwa
   spec:
-    host: ${SENSU_NAME}-uchiwa.cloudapps.example.com
+    host: ${SENSU_NAME}-uchiwa.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${SENSU_NAME}-uchiwa
@@ -497,6 +497,10 @@ parameters:
 - description: "TODO"
   value: "sensu"
   name: SENSU_NAME
+  required: true
+- description: "TODO"
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
   required: true
 - description: "TODO"
   value: "sensu-rabbitmq"

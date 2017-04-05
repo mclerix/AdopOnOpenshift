@@ -150,7 +150,7 @@ function do_ldap() {
   echo "#    DEPLOY LDAP   #"
   echo "####################"
 
-  oc new-app adop-ldap -n $PROJECT_NAME
+  oc new-app adop-ldap -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_gerrit
 }
@@ -169,7 +169,7 @@ function do_gerrit() {
   echo
   echo "Deploying Gerrit"
   echo
-  oc new-app adop-gerrit -n $PROJECT_NAME
+  oc new-app adop-gerrit -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_sonar
 }
@@ -187,7 +187,7 @@ function do_sonar() {
   echo
   echo "Deploying Sonar"
   echo
-  oc new-app adop-sonar -n $PROJECT_NAME
+  oc new-app adop-sonar -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_jenkins
 }
@@ -205,7 +205,7 @@ function do_jenkins() {
   echo
   echo "Deploying Jenkins"
   echo
-  oc new-app adop-jenkins -n $PROJECT_NAME
+  oc new-app adop-jenkins -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_nexus
 }
@@ -215,7 +215,7 @@ function do_nexus() {
   echo "#   DEPLOY NEXUS   #"
   echo "####################"
 
-  oc new-app adop-nexus -n $PROJECT_NAME
+  oc new-app adop-nexus -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_selenium
 }
@@ -225,7 +225,7 @@ function do_selenium() {
   echo "# DEPLOY SELENIUM  #"
   echo "####################"
 
-  oc new-app adop-selenium -n $PROJECT_NAME
+  oc new-app adop-selenium -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_proxy
 }
@@ -235,7 +235,7 @@ function do_proxy() {
   echo "#   DEPLOY PROXY   #"
   echo "####################"
 
-  oc new-app adop-proxy -n $PROJECT_NAME
+  oc new-app adop-proxy -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_test_ADOP_deployment
 }

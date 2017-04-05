@@ -254,7 +254,7 @@ objects:
     labels:
       app: ${LDAP_NAME}-phpadmin
   spec:
-    host: ${LDAP_NAME}-phpadmin.cloudapps.example.com
+    host: ${LDAP_NAME}-phpadmin.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${LDAP_NAME}-phpadmin
@@ -262,6 +262,10 @@ parameters:
 - description: "TODO"
   value: "ldap"
   name: LDAP_NAME
+  required: true
+- description: "TODO"
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
   required: true
 - description: "TODO"
   value: "Z2Vycml0"

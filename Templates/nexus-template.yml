@@ -49,7 +49,7 @@ objects:
             failureThreshold: 3
           env:
           - name: NEXUS_BASE_URL
-            value: ${NEXUS_BASE_URL}
+            value: http://${NEXUS_NAME}.${SUB_DOMAIN}/nexus
           - name: LDAP_SEARCH_BASE
             value: ${LDAP_SEARCH_BASE}
           - name: LDAP_ENABLED
@@ -113,7 +113,7 @@ objects:
     labels:
       app: ${NEXUS_NAME}
   spec:
-    host: ${NEXUS_NAME}.cloudapps.example.com
+    host: ${NEXUS_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${NEXUS_NAME}
@@ -123,8 +123,8 @@ parameters:
   name: NEXUS_NAME
   required: true
 - description: "TODO"
-  value: "http://nexus.cloudapps.example.com/nexus"
-  name: NEXUS_BASE_URL
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
   required: true
 - description: "TODO"
   value: "dc=ldap,dc=example,dc=com"
