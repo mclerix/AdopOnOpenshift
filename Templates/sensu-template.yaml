@@ -81,7 +81,7 @@ objects:
     labels:
       app: ${SENSU_NAME}-uchiwa
   spec:
-    host: ${SENSU_NAME}-uchiwa.${SUB_DOMAIN}
+#    host: ${SENSU_NAME}-uchiwa.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${SENSU_NAME}-uchiwa

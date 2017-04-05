@@ -127,7 +127,7 @@ objects:
     labels:
       app: ${SONAR_NAME}
   spec:
-    host: ${SONAR_NAME}.${SUB_DOMAIN}
+#    host: ${SONAR_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${SONAR_NAME}

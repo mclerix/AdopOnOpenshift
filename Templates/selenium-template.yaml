@@ -86,7 +86,7 @@ objects:
     labels:
       app: ${SELENIUM_NAME}-hub
   spec:
-    host: ${SELENIUM_NAME}-hub.${SUB_DOMAIN}
+#    host: ${SELENIUM_NAME}-hub.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${SELENIUM_NAME}-hub

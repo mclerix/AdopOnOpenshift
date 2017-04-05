@@ -113,7 +113,7 @@ objects:
     labels:
       app: ${NEXUS_NAME}
   spec:
-    host: ${NEXUS_NAME}.${SUB_DOMAIN}
+#    host: ${NEXUS_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${NEXUS_NAME}

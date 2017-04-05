@@ -117,7 +117,7 @@ objects:
     labels:
       service: ${PROXY_NAME}
   spec:
-    host: ${PROXY_NAME}.${SUB_DOMAIN}
+#    host: ${PROXY_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${PROXY_NAME}

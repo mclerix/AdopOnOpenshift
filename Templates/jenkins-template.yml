@@ -184,7 +184,7 @@ objects:
       app: ${JENKINS_NAME}
       service: ${JENKINS_NAME}
   spec:
-    host: ${JENKINS_NAME}.${SUB_DOMAIN}
+#    host: ${JENKINS_NAME}.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${JENKINS_NAME}

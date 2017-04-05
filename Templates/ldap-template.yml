@@ -254,7 +254,7 @@ objects:
     labels:
       app: ${LDAP_NAME}-phpadmin
   spec:
-    host: ${LDAP_NAME}-phpadmin.${SUB_DOMAIN}
+#    host: ${LDAP_NAME}-phpadmin.${SUB_DOMAIN}
     to:
       kind: Service
       name: ${LDAP_NAME}-phpadmin
