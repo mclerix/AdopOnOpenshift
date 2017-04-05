@@ -51,7 +51,9 @@ objects:
             failureThreshold: 3
           env:
           - name: WEBURL
-            value: "http://gerrit:8080/gerrit"
+            value: "http://localhost/gerrit"
+          - name: AUTH_LOGOUTURL
+            value: "http://localhost/gerrit"
           - name: DATABASE_TYPE
             value: "mysql"
           - name: DB_HOSTNAME
@@ -82,7 +84,7 @@ objects:
             value: ${LDAP_USERNAME}
           - name: LDAP_PASSWORD
             value: ${LDAP_PASSWORD}
-          image: clrxm/adop-gerrit:0.1.2
+          image: accenture/adop-gerrit:0.1.3
           imagePullPolicy: Always
           name: ${GERRIT_NAME}
           resources: {}
