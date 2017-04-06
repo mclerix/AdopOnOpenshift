@@ -51,17 +51,17 @@ oc new-app adop-proxy
 ``oc login -u system:admin``
 2. Download script `deploy_adop.sh` under /Scripts
 3. Execute `deploy_adop.sh` <br>
-``bash ./deploy_adop.sh``<br>
+``bash deploy_adop.sh``<br>
 
 
 After that, the ADOP stack should be deployed and available in your Openshift cluster with the errors identified below.
 
 # Deployment Errors identified
 
-**/!\ an ELK stack is required by ADOP.** Currently, ADOP can run without an ELK stack.
+**/!\ an ELK stack is required by ADOP.** Currently, ELK stack has been disabled and ADOP can run without it.
 
 ## Proxy
-**WARNING** Gerrit and Selenium links are broken.
+**WARNING** Gerrit and Selenium links are broken. (Possible cause for Gerrit is the value of WEBURL)
 
 **SOLVED** Nginx does not start and requires all the other Components URL up. Moreover it requires the ELK stack. <br>
 ```
@@ -122,7 +122,7 @@ AH00558: apache2: Could not reliably determine the server's fully qualified doma
 * **WORKS**
 
 ### gerrit
-* **WARNING** Gerrit add users to Administrators group but display an error.
+* **WARNING** Gerrit adds users to Administrators group but display an error.
 ```
 Adding user "jenkins" to: Administrators
 Unable to add user jenkins to group Administrators, response code 201, retry ... 1
@@ -132,7 +132,7 @@ Unable to add user adop to group Administrators, response code 201, retry ... 1
 ```
 > This issue does not impact Gerrit.
 
-* **WARNING** Gerrit uses the hostname provided by the container as URL callback, which results in unresolvable address once trying to log for example. Ex: http://gerrit-1-cq5q1:8080/ instead of http://gerrit.cloudapps.example.com or http://proxy.cloudapps.example.com/gerrit
+* **WARNING** Gerrit uses the hostname provided by the container as URL, which results in unresolvable address once trying to log in for example. Ex: http://gerrit-1-cq5q1:8080/ instead of http://gerrit.cloudapps.example.com or http://proxy.cloudapps.example.com/gerrit. (Maybe related to WEBURL value)
 
 * **SOLVED** Once launched, Gerrit display the following message each 10 seconds: <br>
 `Gerrit unavailable, sleeping for 10` <br>
@@ -294,7 +294,7 @@ Is up and running and can run Load_platfform job. Exemple_workspace creation doe
 
 * **WARNING** Load_platfform job works. As it is raised with gerrit component, the gerrit URL should not have /gerrit. It is advised to remove it from the jobs.groovy used to load the platform. I forked the github https://github.com/Accenture/adop-platform-management in https://github.com/clerixmaxime/adop-platform-management and modified bootstrap/Workspace_Management/Generate_Workspace.groovy and workspaces/jobs/jobs.groovy
 
-* **CRITICAL** Generate Example Workspace does not work. It ends up with the following error in Generate_project job (corresponds to line 30 of this file https://github.com/clerixmaxime/adop-platform-management/blob/master/projects/jobs/jobs.groovy):
+* **SOLVED** Generate Example Workspace does not work. It ends up with the following error in Generate_project job (corresponds to line 30 of this file https://github.com/clerixmaxime/adop-platform-management/blob/master/projects/jobs/jobs.groovy):
 ```
 ++ rm -rf /workspace/ExampleWorkspace/Project_Management/Generate_Project/tmp
 Processing DSL script jobs.groovy
@@ -336,7 +336,7 @@ java.lang.NumberFormatException: For input string: "tcp://172.30.75.45:29418"
 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
 	at java.lang.Thread.run(Thread.java:745)
 ```
-* **WARNING** Can't authenticate to LDAP server but can connect with adop/adop account to the web UI.
+* **SOLVED** Can't authenticate to LDAP server but can connect with adop/adop account to the web UI.
 ```
 Mar 31, 2017 2:47:44 PM org.acegisecurity.providers.ldap.authenticator.BindAuthenticator2 handleBindException
 WARNING: Failed to bind to LDAP: userDncn=jenkins,ou=people,dc=ldap,dc=example,dc=com  username=jenkins
@@ -560,34 +560,17 @@ Providing the IP address of the container running LDAP as LDAP_URL does not solv
 
 # Execution Errors
 ## Load_platform
-The adop-platform-management Github repository has been forked into https://github.com/clerixmaxime/adop-platform-management.git. DSL jobs have been modified to fix errors related to Gerrit. This forked repository should be used as GIT_URL parameter.
-### Without Example Workspace
-**WORKS**
-### With Example Workspace
-Error with the Job Load_platform > Generate_Example_Workspace > Example_Workspace > Project_Management > Generate_Project
-```
-Processing DSL script jobs.groovy
-[ssh-agent] Stopped.
-ERROR: (jobs.groovy, line 30) No signature of method: javaposse.jobdsl.dsl.helpers.BuildParametersContext.extensibleChoiceParameterDefinition() is applicable for argument types: (jobs$_run_closure2_closure4_closure9) values: [jobs$_run_closure2_closure4_closure9@156fd2b1]
-Finished: FAILURE
-```
+The adop-platform-management Github repository has been forked into https://github.com/clerixmaxime/adop-platform-management.git. DSL jobs have been modified to fix errors related to Gerrit. This forked repository should be used as GIT_URL parameter. (Could be fixed by solving issue related to gerrit URL???)
 
-# ADOP & OpenShift
-## OpenShift Sync Plugin
-This plugin requires at least Jenkins 1.651.2. ADOP Jenkins is 1.609.1
-## OpenShift Pipeline Plugin
-This plugin requires at least Jenkins 1.651. ADOP Jenkins is 1.609.1
-## Kubernetes Plugin
-This plugin requires at least Jenkins 2.32.1. ADOP Jenkins is 1.609.1
 
 # TODO
 
 * Fix issues listed above.
 * Add ELK stack or synchronize with openshift-metrics.
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
-* Configure Jenkins to deploy on OpenShift. (**Currently not possible** with ADOP Jenkins version)
-* Configure Jenkins to sync with Openshift (**Currently not possible** with ADOP Jenkins version).
-* Configure Jenkins to deploy slave in Openshift instead of Docker. Using Kubernetes plugin, Jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/). **Currently not possible** with ADOP Jenkins version
+* Configure Jenkins to deploy on OpenShift (Works out-of-the-box one Openshift Pipeline is installed).
+* Configure Jenkins to sync with Openshift (Works out-of-the-box one Openshift Sync is installed).
+* Configure Jenkins to deploy slave in Openshift instead of Docker. Using Kubernetes plugin, Jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/).
 * Identify Required parameters for each component.
 * Write parameters' description.
 
