@@ -8,26 +8,6 @@ metadata:
     tags: "ldap,adop"
 objects:
 - apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: ldap-db-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "5Gi"
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: ldap-static-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "5Gi"
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${LDAP_NAME}
@@ -97,11 +77,9 @@ objects:
         serviceAccount: adop
         volumes:
         - name: db
-          persistentVolumeClaim:
-            claimName: ldap-db-claim
+          emptyDir: {}
         - name: static
-          persistentVolumeClaim:
-            claimName: ldap-static-claim
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

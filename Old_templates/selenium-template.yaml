@@ -91,16 +91,6 @@ objects:
       kind: Service
       name: ${SELENIUM_NAME}-hub
 - apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: selenium-chrome-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "1Gi"
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${SELENIUM_NAME}-node-chrome
@@ -154,8 +144,7 @@ objects:
         serviceAccount: adop
         volumes:
         - name: selenium-chrome-config
-          persistentVolumeClaim:
-            claimName: selenium-chrome-claim
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service
@@ -178,16 +167,6 @@ objects:
     type: ClusterIP
   status:
     loadBalancer: {}
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: selenium-firefox-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "1Gi"
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -242,8 +221,7 @@ objects:
         serviceAccount: adop
         volumes:
         - name: selenium-firefox-config
-          persistentVolumeClaim:
-            claimName: selenium-firefox-claim
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

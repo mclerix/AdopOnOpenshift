@@ -76,23 +76,8 @@ kibana:5601 unavailable, sleeping for 2
 ### ldap
 **WORKS**
 
-* **SOLVED** Users password are not set while deploying LDAP. They have to be set afterward.<br>
-> Password should be set using their base64 value
-
-* **SOLVED** Gerrit and Jenkins users are not created. All other groups and users are created. While logging into the container and trying to add user manually the following happens:
-
-```
-ldapadd -H ldap://localhost -c -x -D "cn=admin,dc=ldap,dc=example,dc=com" -f "/tmp/structure.ldif" -w "Jpk66g63ZifGYIcShSGM"                                                                                                         
-adding new entry "ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                                                                 
-ldap_add: Already exists (68)                                                                                                                                                                                                          
-
-ldapadd: invalid format (line 18) entry: "cn=gerrit,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                               
-ldapadd: invalid format (line 31) entry: "cn=jenkins,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                              
-adding new entry "cn=nexus,ou=people,dc=ldap,dc=example,dc=com"                                                                                                                                                                        
-ldap_add: Already exists (68)                                      
-```
-> Username and password should be different to avoid this error
-
+* **SOLVED** Users password are not set when deploying LDAP. They have to be set afterward.<br>
+> Password should be set using base64 value
 
 ### ldap-phpadmin
 * **WARNING** ldap-phpadmin can't connect directly to ldap server using hostname. However, reconfiguring ``/etc/phpldapadmin/config.php`` and set the IP address of the ldap-server container instead of its hostname seems to fix the problem. See example below: <br>
@@ -101,7 +86,7 @@ ldap_add: Already exists (68)
 $servers = new Datastore();
 $servers->newServer('ldap_pla');
 $servers->setValue('server','name','ldap');
-$servers->setValue('server','__IP_ADDRESS__','ldap');
+$servers->setValue('server','host','__IP_ADDRESS__');
 $servers->setValue('server','port','389');
 $servers->setValue('server','base',array('dc=ldap,dc=example,dc=com'));
 $servers->setValue('login','auth_type','cookie');
@@ -111,7 +96,7 @@ $servers->setValue('server','tls',false);
 ```
 
 ### ldap-ltb
-* **WARNING** WEB UI is up.
+* **INFO** WEB UI is up.
 Logs display the following message: <br>
 ```
 AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 10.128.0.42. Set the 'ServerName' directive globally to suppress this message
@@ -119,11 +104,14 @@ AH00558: apache2: Could not reliably determine the server's fully qualified doma
 
 ## Gerrit
 ### gerrit-mysql
-* **WORKS**
+* **WORKS**, the certified mysql image provided by Red Hat is used.
 
 ### gerrit
-* **WARNING** Gerrit adds users to Administrators group but display an error.
-```
+
+* **WARNING** Gerrit uses the hostname provided by the container as URL, which results in unresolvable address once trying to log in for example. Ex: http://gerrit-1-cq5q1:8080/ instead of http://gerrit.cloudapps.example.com or http://proxy.cloudapps.example.com/gerrit. (Maybe related to WEBURL value, how to set this value to works with Openshift router?)
+
+* **INFO** Gerrit adds users to Administrators group but display an error.
+```bash
 Adding user "jenkins" to: Administrators
 Unable to add user jenkins to group Administrators, response code 201, retry ... 1
 Testing Gerrit Connection
@@ -131,8 +119,6 @@ Adding user "adop" to: Administrators
 Unable to add user adop to group Administrators, response code 201, retry ... 1
 ```
 > This issue does not impact Gerrit.
-
-* **WARNING** Gerrit uses the hostname provided by the container as URL, which results in unresolvable address once trying to log in for example. Ex: http://gerrit-1-cq5q1:8080/ instead of http://gerrit.cloudapps.example.com or http://proxy.cloudapps.example.com/gerrit. (Maybe related to WEBURL value)
 
 * **SOLVED** Once launched, Gerrit display the following message each 10 seconds: <br>
 `Gerrit unavailable, sleeping for 10` <br>
@@ -152,13 +138,13 @@ Unable to create user gerrit, response code 401, retry ... 1
 > Users were missing in LDAP. Solved by solving LDAP user creation error.
 
 ## Sensu
-Currently the whole Sensu stack is not deployed and removed from Proxy check routine to avoid proxy error.
+**INFO** Currently the whole Sensu stack is not deployed and removed from Proxy check routine to avoid proxy error.
 ### sensu-redis
 **WORKS**
 ### sensu-rabbitmq
 **WORKS**
 ### sensu-api
-/!\ Requires to be launched once rabbitmq is ready to avoid the following error:
+* **INFO** Requires to be launched once rabbitmq is ready to avoid the following error:
 ```bash
 {"timestamp":"2017-03-23T08:51:58.830830+0000","level":"error","message":"redis connection error","error":"unable to connect to redis server"}
 {"timestamp":"2017-03-23T08:51:59.022461+0000","level":"error","message":"[amqp] Detected TCP connection failure: Errno::EHOSTUNREACH"}
@@ -190,7 +176,7 @@ To get <sensu-server-pod>, you can type the following command: <br>
 > Upgrading the image to the latest version (0.28.4) does not change anything
 
 ### sensu-server
-/!\ Requires to be launched once rabbitmq is ready to avoid the following error:
+* **INFO** Requires to be launched once rabbitmq is ready to avoid the following error:
 ```bash
 {"timestamp":"2017-03-23T08:52:01.840097+0000","level":"error","message":"redis connection error","error":"unable to connect to redis server"}
 {"timestamp":"2017-03-23T08:52:02.028845+0000","level":"error","message":"[amqp] Detected TCP connection failure: Errno::EHOSTUNREACH"}
@@ -221,8 +207,8 @@ To get <sensu-server-pod>, you can type the following command: <br>
 > Upgrading the image to the latest version (0.28.4) does not change anything
 
 ### sensu-client
-/!\ Requires to be launched once rabbitmq is ready to avoid the following error:
-```
+* **INFO** Requires to be launched once rabbitmq is ready to avoid the following error:
+```bash
 {"timestamp":"2017-03-23T09:24:40.169105+0000","level":"fatal","message":"SENSU NOT RUNNING!"}
 ```
 * **CRITICAL** Once launched, sensu does not start and issue the following error:
@@ -252,9 +238,7 @@ To get <sensu-client-pod>, you can type the following command: <br>
 > Upgrading the image to the latest version (0.28.4) does not change anything
 
 * **CRITICAL** The following error occurs after trying to relaunch sensu-client service:
-
 ```
-
 /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:530:in `start_tcp_server': no acceptor (port is in use or requires root privileges) (RuntimeError)                                               
         from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/eventmachine-1.2.0.1/lib/eventmachine.rb:530:in `start_server'                                                                                                               
         from /opt/sensu/embedded/lib/ruby/gems/2.3.0/gems/sensu-0.26.5/lib/sensu/client/process.rb:364:in `setup_sockets'                                                                                                              
@@ -285,12 +269,12 @@ To get <sensu-client-pod>, you can type the following command: <br>
 
 ## Sonar
 ### sonar-mysql
-**WORKS**
+**WORKS**, the certified mysql image provided by Red Hat is used.
 ### sonar
-**WORKS** | Default user admin/admin
+**WORKS**
 
 ## Jenkins
-Is up and running and can run Load_platfform job. Exemple_workspace creation does not work.
+Is up and running and can run Load_platfform job. Exemple_workspace creation does not fully work because Docker is not set (Will be replaced by OCP integration).
 
 * **WARNING** Load_platfform job works. As it is raised with gerrit component, the gerrit URL should not have /gerrit. It is advised to remove it from the jobs.groovy used to load the platform. I forked the github https://github.com/Accenture/adop-platform-management in https://github.com/clerixmaxime/adop-platform-management and modified bootstrap/Workspace_Management/Generate_Workspace.groovy and workspaces/jobs/jobs.groovy
 
@@ -303,7 +287,7 @@ ERROR: (jobs.groovy, line 30) No signature of method: javaposse.jobdsl.dsl.helpe
 Finished: FAILURE
 ```
 * **SOLVED** Can't access Gerrit
-```
+```bash
 WARNING: Failed to run script file:/var/jenkins_home/init.groovy.d/adop_gerrit.groovy
 java.lang.NumberFormatException: For input string: "tcp://172.30.75.45:29418"
 	at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)
@@ -408,12 +392,17 @@ at java.lang.Thread.run(Thread.java:745)
 ```
 
 ## Selenium
-**WORKS** Selenium-hub, selenium-node-firefox & selenium-node-chrome components WORK
+### selenium-hub
+**WORKS**
+### selenium-node-chrome
+**WORKS**
+### selenium-node-firefox
+**WORKS**
 
 ## Nexus
 **WORKS**
 
-* **WARNING** There is an error decoding ldap.xml file, see error below:<br>
+* **INFO** There is an error decoding ldap.xml file, see error below:<br>
 ```
 2017-03-31 09:55:46 ERROR [jetty-main-1] *SYSTEM org.sonatype.security.ldap.realms.persist.DefaultLdapConfiguration - Failed to decrypt password, assuming the password in file: '/sonatype-work/conf/ldap.xml' is clear text.
 org.sonatype.security.ldap.upgrade.cipher.PlexusCipherException: java.lang.Exception: default.plexus.cipher.encryptedStringCorruptedStructure
@@ -562,12 +551,12 @@ Providing the IP address of the container running LDAP as LDAP_URL does not solv
 ## Load_platform
 The adop-platform-management Github repository has been forked into https://github.com/clerixmaxime/adop-platform-management.git. DSL jobs have been modified to fix errors related to Gerrit. This forked repository should be used as GIT_URL parameter. (Could be fixed by solving issue related to gerrit URL???)
 
-
 # TODO
 
 * Fix issues listed above.
 * Add ELK stack or synchronize with openshift-metrics.
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
+* Extend Openshift Jenkins Image? https://github.com/openshift/jenkins
 * Configure Jenkins to deploy on OpenShift (Works out-of-the-box one Openshift Pipeline is installed).
 * Configure Jenkins to sync with Openshift (Works out-of-the-box one Openshift Sync is installed).
 * Configure Jenkins to deploy slave in Openshift instead of Docker. Using Kubernetes plugin, Jenkins could be configured to use Openshift as a deployment platform to deploy also jenkins slaves (https://blog.openshift.com/jenkins-slaves-in-openshift-using-an-external-jenkins-environment/).

@@ -8,26 +8,6 @@ metadata:
     tags: "proxy,adop"
 objects:
 - apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: proxy-html-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "1Gi"
-- apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: proxy-config-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "1Gi"
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${PROXY_NAME}
@@ -101,11 +81,9 @@ objects:
         serviceAccount: adop
         volumes:
         - name: html
-          persistentVolumeClaim:
-            claimName: proxy-html-claim
+          emptyDir: {}
         - name: config
-          persistentVolumeClaim:
-            claimName: proxy-config-claim
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

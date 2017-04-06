@@ -121,27 +121,25 @@ function do_deploy_databases () {
   echo "####################"
   echo "#   GERRIT MYSQL   #"
   echo "####################"
-  oc new-app mysql-persistent \
+  oc new-app mysql-ephemeral \
     -p MYSQL_PASSWORD=gerrit \
     -p MYSQL_DATABASE=gerrit \
     -p MYSQL_USER=gerrit \
     -p MYSQL_ROOT_PASSWORD=gerrit \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=gerrit-mysql \
-    -p VOLUME_CAPACITY=1Gi \
     -n adop
 
   echo "####################"
   echo "#    SONAR MYSQL   #"
   echo "####################"
-  oc new-app mysql-persistent \
+  oc new-app mysql-ephemeral \
     -p MYSQL_PASSWORD=sonar \
     -p MYSQL_DATABASE=sonar \
     -p MYSQL_USER=sonar \
     -p MYSQL_ROOT_PASSWORD=sonar \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=sonar-mysql \
-    -p VOLUME_CAPACITY=1Gi \
     -n adop
 
   do_ldap

@@ -8,16 +8,6 @@ metadata:
     tags: "nexus,adop"
 objects:
 - apiVersion: v1
-  kind: PersistentVolumeClaim
-  metadata:
-    name: nexus-claim
-  spec:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: "10Gi"
-- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${NEXUS_NAME}
@@ -45,7 +35,7 @@ objects:
       spec:
         containers:
         - volumeMounts:
-          - name: nexus
+          - name: sonatype-work
             mountPath: /sonatype-work
           readinessProbe:
             httpGet:
@@ -92,9 +82,8 @@ objects:
         terminationGracePeriodSeconds: 30
         serviceAccount: adop
         volumes:
-        - name: nexus
-          persistentVolumeClaim:
-            claimName: nexus-claim
+        - name: sonatype-work
+          emptyDir: {}
   status: {}
 - apiVersion: v1
   kind: Service

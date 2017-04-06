@@ -8,6 +8,36 @@ metadata:
     tags: "sonar,adop"
 objects:
 - apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: sonar-data-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: "5Gi"
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: sonar-extensions-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: "5Gi"
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: sonar-logs-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: "5Gi"
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${SONAR_NAME}
@@ -93,11 +123,14 @@ objects:
         serviceAccount: adop
         volumes:
         - name: sonar-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: sonar-data-claim
         - name: sonar-extensions
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: sonar-extensions-claim
         - name: sonar-logs
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: sonar-logs-claim
   status: {}
 - apiVersion: v1
   kind: Service

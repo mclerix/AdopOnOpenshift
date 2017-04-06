@@ -8,6 +8,26 @@ metadata:
     tags: "gerrit,adop"
 objects:
 - apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: gerrit-review-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: "1Gi"
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: gerrit-repos-claim
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: "1Gi"
+- apiVersion: v1
   kind: DeploymentConfig
   metadata:
     name: ${GERRIT_NAME}
@@ -101,9 +121,11 @@ objects:
         serviceAccount: adop
         volumes:
         - name: repos
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: gerrit-repos-claim
         - name: review-site
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: gerrit-review-claim
   status: {}
 - apiVersion: v1
   kind: Service
