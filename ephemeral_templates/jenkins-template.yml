@@ -132,7 +132,7 @@ objects:
             value: ${DOCKER_CLIENT_CERT_PATH}
           - name: CARTRIDGE_SOURCES
             value: ${CARTRIDGE_SOURCES}
-          image: accenture/adop-jenkins:0.2.6
+          image: clrxm/adop-jenkins:2.7.4
           imagePullPolicy: Always
           name: ${JENKINS_NAME}
           resources: {}

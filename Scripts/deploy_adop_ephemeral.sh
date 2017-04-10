@@ -100,14 +100,14 @@ function do_init_OCP_for_ADOP () {
 
   echo "SETUP rights for the project: $PROJECT_NAME"
   oadm policy add-scc-to-group anyuid system:serviceaccounts:adop
-  oadm policy add-role-to-user edit system:serviceaccount:adop:adop
+  oadm policy add-role-to-user edit system:serviceaccount:adop:adop -n adop
 
   echo "Retrieve ADOP Templates"
   git clone https://github.com/clerixmaxime/AdopOnOpenshift.git
   cd ./AdopOnOpenshift
 
   echo "Create ADOP Templates for OpenShift"
-  oc create -f Templates/
+  oc create -f ephemeral_templates/
 
   do_deploy_databases
 }
@@ -121,25 +121,27 @@ function do_deploy_databases () {
   echo "####################"
   echo "#   GERRIT MYSQL   #"
   echo "####################"
-  oc new-app mysql-ephemeral \
+  oc new-app mysql-persistent \
     -p MYSQL_PASSWORD=gerrit \
     -p MYSQL_DATABASE=gerrit \
     -p MYSQL_USER=gerrit \
     -p MYSQL_ROOT_PASSWORD=gerrit \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=gerrit-mysql \
+    -p VOLUME_CAPACITY=1Gi \
     -n adop
 
   echo "####################"
   echo "#    SONAR MYSQL   #"
   echo "####################"
-  oc new-app mysql-ephemeral \
+  oc new-app mysql-persistent \
     -p MYSQL_PASSWORD=sonar \
     -p MYSQL_DATABASE=sonar \
     -p MYSQL_USER=sonar \
     -p MYSQL_ROOT_PASSWORD=sonar \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=sonar-mysql \
+    -p VOLUME_CAPACITY=1Gi \
     -n adop
 
   do_ldap

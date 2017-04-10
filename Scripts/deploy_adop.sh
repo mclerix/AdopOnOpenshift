@@ -100,14 +100,14 @@ function do_init_OCP_for_ADOP () {
 
   echo "SETUP rights for the project: $PROJECT_NAME"
   oadm policy add-scc-to-group anyuid system:serviceaccounts:adop
-  oadm policy add-role-to-user edit system:serviceaccount:adop:adop
+  oadm policy add-role-to-user edit system:serviceaccount:adop:adop -n adop
 
   echo "Retrieve ADOP Templates"
   git clone https://github.com/clerixmaxime/AdopOnOpenshift.git
   cd ./AdopOnOpenshift
 
   echo "Create ADOP Templates for OpenShift"
-  oc create -f Templates/
+  oc create -f persistent_templates/
 
   do_deploy_databases
 }
