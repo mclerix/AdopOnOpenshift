@@ -239,6 +239,88 @@ function do_proxy() {
 
   oc new-app adop-proxy -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
+  do_sensu
+}
+
+function do_sensu() {
+  echo "####################"
+  echo "#   DEPLOY SENSU   #"
+  echo "####################"
+
+  oc new-app adop-sensu -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
+
+  echo
+  echo "Test sensu-redis and sensu-rabbitmq deployment"
+  echo
+  wait_for_application_deployment "sensu-rabbitmq"
+  wait_for_application_deployment "sensu-redis"
+  wait_for_application_deployment "sensu-api"
+  echo
+  echo "sensu-redis and sensu-rabbitmq deployed"
+  echo
+
+  echo
+  echo "fix Sensu-api permissions and restart container"
+  echo
+  SENSU_API_POD=$(oc get pods | grep sensu-api | cut -d' ' -f 1)
+  oc exec $SENSU_API_POD -c sensu-api -- chmod -R 777 /tmp/sensu_api_loaded_files
+  oc exec $SENSU_API_POD  -c sensu-api -- service sensu-api restart
+  echo
+  echo "Sensu-api permissions fixed"
+  echo
+
+  echo
+  echo "Wait for sensu-api deployment"
+  echo
+  wait_for_application_deployment "sensu-api"
+  wait_for_application_deployment "sensu-server"
+  echo
+  echo "sensu-api redeployed"
+  echo
+
+  echo
+  echo "fix Sensu-server permissions and restart container"
+  echo
+  SENSU_SERVER_POD=$(oc get pods | grep sensu-server | cut -d' ' -f 1)
+  oc exec $SENSU_SERVER_POD -c sensu-server -- chmod -R 777 /tmp/sensu_server_loaded_files
+  oc exec $SENSU_SERVER_POD  -c sensu-server -- service sensu-server restart
+  echo
+  echo "Sensu-server permissions fixed"
+  echo
+
+  echo
+  echo "Wait for sensu-server deployment"
+  echo
+  wait_for_application_deployment "sensu-server"
+  wait_for_application_deployment "sensu-client"
+  echo
+  echo "sensu-server redeployed"
+  echo
+
+  echo
+  echo "fix Sensu-client permissions and restart container"
+  echo
+  SENSU_CLIENT_POD=$(oc get pods | grep sensu-client | cut -d' ' -f 1)
+  oc exec $SENSU_CLIENT_POD -c sensu-client -- chmod -R 777 /tmp/sensu_client_loaded_files
+  oc exec $SENSU_CLIENT_POD  -c sensu-client -- service sensu-client restart
+  echo
+  echo "Sensu-client permissions fixed"
+  echo
+
+  do_fix_phpldapadmin
+}
+
+# This function is a temporary fix to give access to the ldap container from ldap-phpadmin
+function do_fix_phpldapadmin() {
+  echo "####################"
+  echo "#  Fix LDAP-Admin  #"
+  echo "####################"
+
+  LDAP_POD=$(oc get pods | grep ^ldap-[0-9]-* | cut -d' ' -f 1)
+  LDAP_POD_IP=$(oc describe pod $LDAP_POD | grep IP | cut -d':' -f 2 | sed -e 's/^[ \t]*//')
+  LDAP_PHP_POD=$(oc get pods | grep ^ldap-phpadmin-[0-9]-* | cut -d' ' -f 1)
+  oc exec $LDAP_PHP_POD -c ldap-phpadmin -- sed -i "7s/.*/\$servers->setValue('server','host','$LDAP_POD_IP');/" /etc/phpldapadmin/config.php
+
   do_test_ADOP_deployment
 }
 

@@ -227,17 +227,6 @@ function do_selenium() {
 
   oc new-app adop-selenium -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
-  do_sensu
-}
-
-function do_sensu() {
-  echo "####################"
-  echo "#   DEPLOY SENSU   #"
-  echo "####################"
-
-  oc new-app adop-sensu -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
-
-
   do_proxy
 }
 
@@ -247,6 +236,16 @@ function do_proxy() {
   echo "####################"
 
   oc new-app adop-proxy -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
+
+  do_sensu
+}
+
+function do_sensu() {
+  echo "####################"
+  echo "#   DEPLOY SENSU   #"
+  echo "####################"
+
+  oc new-app adop-sensu -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   echo
   echo "Test sensu-redis and sensu-rabbitmq deployment"
