@@ -122,7 +122,7 @@ objects:
             value: ${RABBITMQ_HOST}
           - name: REDIS_HOST
             value: ${REDIS_HOST}
-          image: accenture/adop-sensu:0.2.0
+          image: clrxm/adop-sensu:0.26.5
           args:
             - "api"
           imagePullPolicy: Always
@@ -203,7 +203,7 @@ objects:
             value: ${REDIS_HOST}
           - name: TRANSPORT_NAME
             value: ${TRANSPORT_NAME}
-          image: accenture/adop-sensu:0.2.0
+          image: clrxm/adop-sensu:0.26.5
           args:
             - "server"
           imagePullPolicy: Always
@@ -292,7 +292,7 @@ objects:
             value: ${JENKINS_PREFIX}
           - name: CLIENT_SUBSCRIPTIONS
             value: ${CLIENT_SUBSCRIPTIONS}
-          image: accenture/adop-sensu:0.2.0
+          image: clrxm/adop-sensu:0.26.5
           args:
             - "client"
           imagePullPolicy: Always
