@@ -122,8 +122,8 @@ objects:
       kind: Service
       name: ${PROXY_NAME}
       weight: 100
-  port:
-    targetPort: http
+    port:
+      targetPort: http
   wildcardPolicy: None
 parameters:
 - description: "TODO"
