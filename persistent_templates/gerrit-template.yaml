@@ -163,8 +163,8 @@ objects:
     to:
       kind: Service
       name: ${GERRIT_NAME}
-  port:
-    targetPort: http
+    port:
+      targetPort: http
   wildcardPolicy: None
 parameters:
 - description: "TODO"

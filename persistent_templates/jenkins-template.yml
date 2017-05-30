@@ -201,8 +201,8 @@ objects:
       kind: Service
       name: ${JENKINS_NAME}
       weight: 100
-  port:
-    targetPort: http-jenkins
+    port:
+      targetPort: http-jenkins
   wildcardPolicy: None
 - apiVersion: v1
   kind: DeploymentConfig
