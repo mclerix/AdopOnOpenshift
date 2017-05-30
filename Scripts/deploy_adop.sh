@@ -21,11 +21,11 @@
 
 ############ VARIABLES ############
 # OpenShift Project
-PROJECT_NAME="adop"
-PROJECT_DISPLAY_NAME="DevOps Platform by Accenture"
+PROJECT_NAME=$1
+PROJECT_DISPLAY_NAME="DevOps Platform by Accenture ($PROJECT_NAME)"
 PROJECT_DESCRIPTION="DevOps Platform by Accenture - Jenkins, Gerrit, LDAP, SonarQube, Selenium and Nexus"
 
-SUB_DOMAIN="cloudapps.example.com"
+SUB_DOMAIN=$2
 DEPLOYMENT_CHECK_INTERVAL=10 # Time in seconds between each check
 DEPLOYMENT_CHECK_TIMES=60
 ###################################
@@ -99,15 +99,15 @@ function do_init_OCP_for_ADOP () {
   echo
 
   echo "SETUP rights for the project: $PROJECT_NAME"
-  oadm policy add-scc-to-group anyuid system:serviceaccounts:adop
-  oadm policy add-role-to-user edit system:serviceaccount:adop:adop -n adop
+  oadm policy add-scc-to-group anyuid system:serviceaccounts:$PROJECT_NAME
+  oadm policy add-role-to-user edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME
 
   echo "Retrieve ADOP Templates"
   git clone https://github.com/clerixmaxime/AdopOnOpenshift.git
   cd ./AdopOnOpenshift
 
   echo "Create ADOP Templates for OpenShift"
-  oc create -f persistent_templates/
+  oc create -f ephemeral_templates/
 
   do_deploy_databases
 }
@@ -121,28 +121,26 @@ function do_deploy_databases () {
   echo "####################"
   echo "#   GERRIT MYSQL   #"
   echo "####################"
-  oc new-app mysql-persistent \
+  oc new-app mysql-ephemeral \
     -p MYSQL_PASSWORD=gerrit \
     -p MYSQL_DATABASE=gerrit \
     -p MYSQL_USER=gerrit \
     -p MYSQL_ROOT_PASSWORD=gerrit \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=gerrit-mysql \
-    -p VOLUME_CAPACITY=1Gi \
-    -n adop
+    -n $PROJECT_NAME
 
   echo "####################"
   echo "#    SONAR MYSQL   #"
   echo "####################"
-  oc new-app mysql-persistent \
+  oc new-app mysql-ephemeral \
     -p MYSQL_PASSWORD=sonar \
     -p MYSQL_DATABASE=sonar \
     -p MYSQL_USER=sonar \
     -p MYSQL_ROOT_PASSWORD=sonar \
     -p MYSQL_VERSION=5.6 \
     -p DATABASE_SERVICE_NAME=sonar-mysql \
-    -p VOLUME_CAPACITY=1Gi \
-    -n adop
+    -n $PROJECT_NAME
 
   do_ldap
 }
@@ -383,6 +381,22 @@ function do_test_ADOP_deployment() {
   echo "##########################"
   echo "# ADOP HAS BEEN DEPLOYED #"
   echo "##########################"
+
+  do_init_adop_environments
+}
+
+function do_init_adop_environments() {
+  oc new-project $PROJECT_NAME-dev --display-name="$PROJECT_NAME - Dev"
+  oc new-project $PROJECT_NAME-test --display-name="$PROJECT_NAME - Test"
+  oc new-project $PROJECT_NAME-prod --display-name="$PROJECT_NAME - Prod"
+
+  # Allow Jenkins to deploy to apps environments.
+  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-dev -n $PROJECT_NAME-dev
+  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-test -n $PROJECT_NAME-test
+  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-prod -n $PROJECT_NAME-prod
+
+  oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-test -n $PROJECT_NAME-dev
+  oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-prod -n $PROJECT_NAME-dev
 }
 
 # Test if oc CLI is available
