@@ -1,0 +1,1005 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Openshift Demo",
+  "Mappings": {
+    "RegionMap": {
+      "eu-central-1": {
+        "CENTOSAMI": "ami-9bf712f4",
+        "AWSLINUXAMI": "ami-ea26ce85",
+        "NATAMI": "ami-ae380eb3",
+        "RHELAMI": "ami-875042eb"
+      },
+      "eu-west-1": {
+        "CENTOSAMI": "ami-7abd0209",
+        "AWSLINUXAMI": "ami-f9dd458a",
+        "NATAMI": "ami-14913f63",
+        "RHELAMI": "ami-8b8c57f8"
+      },
+      "us-east-1": {
+        "CENTOSAMI": "ami-6d1c2007",
+        "AWSLINUXAMI": "ami-6869aa05",
+        "NATAMI": "ami-184dc970",
+        "RHELAMI": "ami-2051294a"
+      },
+      "us-west-2": {
+        "CENTOSAMI": "ami-d2c924b2",
+        "AWSLINUXAMI": "ami-7172b611",
+        "NATAMI": "ami-290f4119",
+        "RHELAMI": "ami-775e4f16"
+      },
+      "us-west-1": {
+        "CENTOSAMI": "ami-af4333cf",
+        "AWSLINUXAMI": "ami-31490d51",
+        "NATAMI": "ami-a98396ec",
+        "RHELAMI": "ami-d1315fb1"
+      },
+      "ap-southeast-1": {
+        "CENTOSAMI": "ami-f068a193",
+        "AWSLINUXAMI": "ami-a59b49c6",
+        "NATAMI": "ami-6aa38238",
+        "RHELAMI": "ami-e0c19f83"
+      },
+      "ap-southeast-2": {
+        "CENTOSAMI": "ami-fedafc9d",
+        "AWSLINUXAMI": "ami-dc361ebf",
+        "NATAMI": "ami-893f53b3",
+        "RHELAMI": "ami-e0c19f83"
+      },
+      "ap-northeast-1": {
+        "CENTOSAMI": "ami-eec1c380",
+        "AWSLINUXAMI": "ami-374db956",
+        "NATAMI": "ami-27d6e626",
+        "RHELAMI": "ami-e0c19f83"
+      },
+      "ap-northeast-2": {
+        "CENTOSAMI": "ami-c74789a9",
+        "AWSLINUXAMI": "ami-2b408b45",
+        "NATAMI": "ami-68a46f06",
+        "RHELAMI": "ami-e0c19f83"
+      },
+      "sa-east-1": {
+        "CENTOSAMI": "ami-26b93b4a",
+        "AWSLINUXAMI": "ami-6dd04501",
+        "NATAMI": "ami-8122969c",
+        "RHELAMI": "ami-e0c19f83"
+      }
+    }
+  },
+  "Outputs": {
+    "ReleaseNote": {
+      "Description": "Here is your Openshift Web Console!",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Fn::GetAtt": [
+                "AdopEC2",
+                "PublicIp"
+              ]
+            },
+            ":8443/console"
+          ]
+        ]
+      }
+    },
+    "SSH": {
+      "Description": "Use this command to ssh into your ADOP EC2 instance.",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "ssh -i ",
+            { "Ref": "KeyName" },
+            ".pem ec2-user@",
+            {
+              "Fn::GetAtt": [
+                "AdopEC2",
+                "PublicIp"
+              ]
+            },
+            ""
+          ]
+        ]
+      }
+    }
+  },
+  "Parameters": {
+    "UseElasticIP": {
+      "Type": "String",
+      "Description": "Without Elastic IP, your EC2 instance public IP address will change everytime the system is restarted.",
+      "AllowedValues": [ "true", "false" ],
+      "ConstraintDescription": "Must be a boolean value.",
+      "Default": "true"
+    },
+    "KeyName": {
+      "Default": "",
+      "Description": "SSH Key pair for accessing your EC2 instance",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "EC2VolumeSize": {
+      "Type": "String",
+      "Default": "50",
+      "Description": "ADOP Core EC2 volume size in GB."
+    },
+    "EC2InstanceType": {
+      "Type": "String",
+      "Description": "ADOP Core EC2 HVM instance type.",
+      "AllowedValues": [
+        "t2.large",
+        "m4.large",
+        "m4.xlarge",
+        "m3.large",
+        "m3.xlarge"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 HVM instance type.",
+      "Default": "m4.large"
+    }
+  },
+  "Conditions": {
+    "UseElasticIPCondition" : {
+      "Fn::Equals" : [ {"Ref" : "UseElasticIP"}, "true" ]
+    }
+  },
+  "Resources": {
+    "ElasticIP": {
+      "Type": "AWS::EC2::EIP",
+      "Condition": "UseElasticIPCondition",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "AdopEC2"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "77d8a590-a4b7-4657-ae49-2bace7b74166"
+        }
+      }
+    },
+    "AdopEC2": {
+      "Properties": {
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": { "Ref": "EC2VolumeSize" },
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": {
+						  "Fn::If" : [ "UseElasticIPCondition", "false", "true" ]
+						},
+            "DeleteOnTermination": "true",
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "AdopSecurityGroup"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            }
+          }
+        ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "CENTOSAMI"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "EC2InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "AdopEC2"
+                ]
+              ]
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash\n",
+                "export IP=$(hostname --ip-address)\n",
+                "yum -y install docker wget git\n",
+                "sed -i \"s/#ADD_REGISTRY/ADD_REGISTRY/g\" /etc/sysconfig/docker\n",
+                "echo \"INSECURE_REGISTRY='--insecure-registry 172.30.0.0/16'\" > /etc/sysconfig/docker\n",
+                "systemctl start docker\n",
+                "systemctl enable docker\n",
+                "cd /opt\n",
+                "wget https://github.com/openshift/origin/releases/download/v1.4.1/openshift-origin-client-tools-v1.4.1-3f9807a-linux-64bit.tar.gz\n",
+                "tar -xvf openshift-origin-client-tools-v1.4.1-3f9807a-linux-64bit.tar.gz\n",
+                "rm -fr *.tar.gz\n",
+                "ln -sv $(pwd)/$(ls)/oc /usr/bin/oc\n",
+                "export PUBLIC_HOSTNAME=$(curl http://169.254.169.254/latest/meta-data/public-hostname)\n",
+                "export PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)\n",
+                "oc cluster up --public-hostname=$PUBLIC_HOSTNAME --routing-suffix=${PUBLIC_IP}.xip.io --host-data-dir=$(pwd)/data --host-config-dir=$(pwd)/config --host-volumes-dir=$(pwd)/volumes\n",
+                "oc login -u system:admin\n",
+                "oc adm policy add-cluster-role-to-user cluster-admin admin --as=system:admin &> /dev/null\n",
+                "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                "\"Reason\" : \"ADOP is ready\",",
+                "\"UniqueId\" : \"IDAdopCompletion\",",
+                "\"Data\" : \"Done\"}' ",
+                "\"",
+                {
+                  "Ref": "AdopWaitConditionHandle"
+                },
+                "\"\n",
+                "\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        }
+      }
+    },
+    "PublicRouteDefault": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "VpcInternetGateway"
+        },
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        }
+      },
+      "Type": "AWS::EC2::Route",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "cc4ce313-df1f-42d2-bab5-12efccd9dfd9"
+        }
+      }
+    },
+    "PublicRouteTable": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::RouteTable",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "4ddb3c75-e8a0-4b89-9744-115cc2a9d1ee"
+        }
+      }
+    },
+    "PublicSubnet": {
+      "Properties": {
+        "CidrBlock": "10.10.1.0/24",
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::Subnet",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3"
+        }
+      }
+    },
+    "PublicSubnetPublicRouteTableAssoc": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "49ba56df-a6f9-4eef-a621-d01f453e23d9"
+        }
+      }
+    },
+    "Vpc": {
+      "Properties": {
+        "CidrBlock": "10.10.0.0/16",
+        "EnableDnsHostnames": "true",
+        "EnableDnsSupport": "true"
+      },
+      "Type": "AWS::EC2::VPC",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "a44e677b-c679-482b-929c-f1a7aa112926"
+        }
+      }
+    },
+    "VpcGatewayAttachment": {
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcInternetGateway"
+        },
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "82dcb3af-1538-44be-b9ad-cda2335288f1"
+        }
+      }
+    },
+    "VpcInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "a25e58c0-2ee7-41d4-ab1f-42f4d636c535"
+        }
+      }
+    },
+    "AdopSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Swarm Proxy Security Group",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "22",
+            "IpProtocol": "tcp",
+            "ToPort": "22"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "8443",
+            "IpProtocol": "tcp",
+            "ToPort": "8443"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "IpProtocol": "tcp",
+            "ToPort": "80"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "IpProtocol": "tcp",
+            "ToPort": "443"
+          },
+          {
+            "CidrIp": {
+              "Fn::GetAtt": [
+                "Vpc",
+                "CidrBlock"
+              ]
+            },
+            "FromPort": "389",
+            "IpProtocol": "tcp",
+            "ToPort": "389"
+          }
+        ],
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "5f8a92e2-f223-4168-893e-02e01796aa86"
+        }
+      }
+    },
+    "AdopWaitCondition": {
+      "Type": "AWS::CloudFormation::WaitCondition",
+      "Properties": {
+        "Handle": {
+          "Ref": "AdopWaitConditionHandle"
+        },
+        "Timeout": "3500"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "0eef5043-0727-47d5-8591-648eaf4ca05a"
+        }
+      }
+    },
+    "AdopWaitConditionHandle": {
+      "Type": "AWS::CloudFormation::WaitConditionHandle",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "7934e36f-378a-4447-aa93-674ae8a35be6"
+        }
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "a25e58c0-2ee7-41d4-ab1f-42f4d636c535": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 120,
+          "y": 200
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "a44e677b-c679-482b-929c-f1a7aa112926": {
+        "size": {
+          "width": 710,
+          "height": 290
+        },
+        "position": {
+          "x": 250,
+          "y": 80
+        },
+        "z": 1,
+        "embeds": [
+          "5f8a92e2-f223-4168-893e-02e01796aa86",
+          "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3",
+          "4ddb3c75-e8a0-4b89-9744-115cc2a9d1ee"
+        ]
+      },
+      "35cfa4d8-7b76-4317-a01a-96dbf919bd0d": {
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "position": {
+          "x": 590,
+          "y": 390
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": [
+          "eeee439c-93d4-4d5d-904e-8de917cf1f40",
+          "cba4c0fc-c175-4f41-88be-bdcd9a25a862",
+          "cd66cd71-b482-4f28-92a6-11dc601a5597"
+        ]
+      },
+      "5d410393-db64-4d4b-836d-a23ab8561339": {
+        "size": {
+          "width": 170,
+          "height": 160
+        },
+        "position": {
+          "x": 340,
+          "y": 430
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": [
+          "655d7159-0e6b-41f6-b58d-d795e5b20e7a"
+        ]
+      },
+      "b35c0812-8292-43d4-aaf9-ec5587d06c6e": {
+        "source": {
+          "id": "5d410393-db64-4d4b-836d-a23ab8561339"
+        },
+        "target": {
+          "id": "35cfa4d8-7b76-4317-a01a-96dbf919bd0d"
+        },
+        "z": 2
+      },
+      "82dcb3af-1538-44be-b9ad-cda2335288f1": {
+        "source": {
+          "id": "a25e58c0-2ee7-41d4-ab1f-42f4d636c535"
+        },
+        "target": {
+          "id": "a44e677b-c679-482b-929c-f1a7aa112926"
+        },
+        "z": 1
+      },
+      "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3": {
+        "size": {
+          "width": 240,
+          "height": 240
+        },
+        "position": {
+          "x": 590,
+          "y": 100
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": [
+          "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        ]
+      },
+      "4ddb3c75-e8a0-4b89-9744-115cc2a9d1ee": {
+        "size": {
+          "width": 190,
+          "height": 150
+        },
+        "position": {
+          "x": 330,
+          "y": 140
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": [
+          "cc4ce313-df1f-42d2-bab5-12efccd9dfd9"
+        ]
+      },
+      "49ba56df-a6f9-4eef-a621-d01f453e23d9": {
+        "source": {
+          "id": "4ddb3c75-e8a0-4b89-9744-115cc2a9d1ee"
+        },
+        "target": {
+          "id": "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3"
+        },
+        "z": 2
+      },
+      "cc4ce313-df1f-42d2-bab5-12efccd9dfd9": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 390,
+          "y": 170
+        },
+        "z": 3,
+        "parent": "4ddb3c75-e8a0-4b89-9744-115cc2a9d1ee",
+        "embeds": [],
+        "references": [
+          "a25e58c0-2ee7-41d4-ab1f-42f4d636c535"
+        ]
+      },
+      "9476a6df-d58e-42b8-93db-8d04e5f5b7f4": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 880,
+          "y": 230
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": []
+      },
+      "97c64025-438f-4af4-afd1-18baa33f0dbc": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 680,
+          "y": 230
+        },
+        "z": 3,
+        "parent": "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3",
+        "embeds": [],
+        "isrelatedto": [
+          "9476a6df-d58e-42b8-93db-8d04e5f5b7f4",
+          "0ed6b090-237d-4f57-ad37-f77099070540"
+        ]
+      },
+      "655d7159-0e6b-41f6-b58d-d795e5b20e7a": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 390,
+          "y": 480
+        },
+        "z": 3,
+        "parent": "5d410393-db64-4d4b-836d-a23ab8561339",
+        "embeds": [],
+        "references": [
+          "97c64025-438f-4af4-afd1-18baa33f0dbc"
+        ]
+      },
+      "5f8a92e2-f223-4168-893e-02e01796aa86": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 880,
+          "y": 130
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": []
+      },
+      "50a0d189-8c47-44b2-8eff-17759eb9c659": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 670,
+          "y": 180
+        },
+        "z": 3,
+        "parent": "869aca7e-e10e-4b3f-9bfd-86e5ff3a00e3",
+        "embeds": [],
+        "dependson": [
+          "97c64025-438f-4af4-afd1-18baa33f0dbc",
+          "a7beba5f-00e5-4d95-b03f-be9fc6d2aab5",
+          "007d682c-145c-42ac-a10f-dbb3c791ca22"
+        ],
+        "isrelatedto": [
+          "9476a6df-d58e-42b8-93db-8d04e5f5b7f4",
+          "a44e677b-c679-482b-929c-f1a7aa112926",
+          "5f8a92e2-f223-4168-893e-02e01796aa86",
+          "89b96fce-9d10-40a4-9707-28adc03432e7",
+          "6378e06e-56df-465c-baa5-1984f0c2ff48",
+          "dfa972dc-2815-4964-a003-dad8912feaef",
+          "23df0d39-96c2-4932-b761-6311656005ec",
+          "7934e36f-378a-4447-aa93-674ae8a35be6"
+        ]
+      },
+      "cd66cd71-b482-4f28-92a6-11dc601a5597": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 620,
+          "y": 450
+        },
+        "z": 3,
+        "parent": "35cfa4d8-7b76-4317-a01a-96dbf919bd0d",
+        "embeds": [],
+        "dependson": [
+          "50a0d189-8c47-44b2-8eff-17759eb9c659",
+          "97c64025-438f-4af4-afd1-18baa33f0dbc",
+          "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        ],
+        "isrelatedto": [
+          "9476a6df-d58e-42b8-93db-8d04e5f5b7f4",
+          "a44e677b-c679-482b-929c-f1a7aa112926",
+          "5f8a92e2-f223-4168-893e-02e01796aa86",
+          "89b96fce-9d10-40a4-9707-28adc03432e7",
+          "6378e06e-56df-465c-baa5-1984f0c2ff48",
+          "2081c4d8-19c1-42cd-ac1b-f37218066a19"
+        ]
+      },
+      "6378e06e-56df-465c-baa5-1984f0c2ff48": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 880,
+          "y": 390
+        },
+        "z": 2,
+        "parent": "a44e677b-c679-482b-929c-f1a7aa112926",
+        "embeds": []
+      },
+      "e7511ce7-d6ad-4efa-9a80-071b8b532447": {
+        "source": {
+          "id": "cd66cd71-b482-4f28-92a6-11dc601a5597"
+        },
+        "target": {
+          "id": "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        },
+        "z": 4
+      },
+      "77d8a590-a4b7-4657-ae49-2bace7b74166": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 660,
+          "y": -20
+        },
+        "z": 1,
+        "embeds": [],
+        "isconnectedto": [
+          "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        ]
+      },
+      "820de39c-9417-4a1d-ad9d-98e027eb1a3f": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 600,
+          "y": 590
+        },
+        "z": 3,
+        "parent": "35cfa4d8-7b76-4317-a01a-96dbf919bd0d",
+        "embeds": [],
+        "dependson": [
+          "50a0d189-8c47-44b2-8eff-17759eb9c659",
+          "97c64025-438f-4af4-afd1-18baa33f0dbc"
+        ],
+        "isrelatedto": [
+          "9476a6df-d58e-42b8-93db-8d04e5f5b7f4",
+          "a44e677b-c679-482b-929c-f1a7aa112926",
+          "5f8a92e2-f223-4168-893e-02e01796aa86",
+          "89b96fce-9d10-40a4-9707-28adc03432e7",
+          "6378e06e-56df-465c-baa5-1984f0c2ff48"
+        ]
+      },
+      "a7beba5f-00e5-4d95-b03f-be9fc6d2aab5": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 520,
+          "y": 700
+        },
+        "z": 1,
+        "embeds": [],
+        "references": [
+          "2081c4d8-19c1-42cd-ac1b-f37218066a19"
+        ],
+        "dependson": [
+          "cd66cd71-b482-4f28-92a6-11dc601a5597"
+        ]
+      },
+      "2081c4d8-19c1-42cd-ac1b-f37218066a19": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 610,
+          "y": 700
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "3d85fceb-fe8b-4481-b64f-d6d957976075": {
+        "source": {
+          "id": "a7beba5f-00e5-4d95-b03f-be9fc6d2aab5"
+        },
+        "target": {
+          "id": "cd66cd71-b482-4f28-92a6-11dc601a5597"
+        },
+        "z": 11
+      },
+      "b99d6ff0-701c-486c-b251-dd9f37c3bf91": {
+        "source": {
+          "id": "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        },
+        "target": {
+          "id": "a7beba5f-00e5-4d95-b03f-be9fc6d2aab5"
+        },
+        "z": 4
+      },
+      "cba4c0fc-c175-4f41-88be-bdcd9a25a862": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 730,
+          "y": 450
+        },
+        "z": 3,
+        "parent": "35cfa4d8-7b76-4317-a01a-96dbf919bd0d",
+        "embeds": [],
+        "dependson": [
+          "50a0d189-8c47-44b2-8eff-17759eb9c659",
+          "97c64025-438f-4af4-afd1-18baa33f0dbc",
+          "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        ],
+        "isrelatedto": [
+          "9476a6df-d58e-42b8-93db-8d04e5f5b7f4",
+          "a44e677b-c679-482b-929c-f1a7aa112926",
+          "5f8a92e2-f223-4168-893e-02e01796aa86",
+          "89b96fce-9d10-40a4-9707-28adc03432e7",
+          "6378e06e-56df-465c-baa5-1984f0c2ff48",
+          "2081c4d8-19c1-42cd-ac1b-f37218066a19",
+          "4639eafb-f924-47cc-9b96-2e3d5c363e1d"
+        ]
+      },
+      "007d682c-145c-42ac-a10f-dbb3c791ca22": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 990,
+          "y": 540
+        },
+        "z": 1,
+        "embeds": [],
+        "references": [
+          "4639eafb-f924-47cc-9b96-2e3d5c363e1d"
+        ],
+        "dependson": [
+          "cba4c0fc-c175-4f41-88be-bdcd9a25a862"
+        ]
+      },
+      "4639eafb-f924-47cc-9b96-2e3d5c363e1d": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 990,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "4f373403-1ec4-4a33-9390-f1e9c3e48b03": {
+        "source": {
+          "id": "007d682c-145c-42ac-a10f-dbb3c791ca22"
+        },
+        "target": {
+          "id": "cba4c0fc-c175-4f41-88be-bdcd9a25a862"
+        },
+        "z": 11
+      },
+      "ae7640e6-2e2a-4304-b19a-3c52707580c9": {
+        "source": {
+          "id": "50a0d189-8c47-44b2-8eff-17759eb9c659"
+        },
+        "target": {
+          "id": "007d682c-145c-42ac-a10f-dbb3c791ca22"
+        },
+        "z": 11
+      },
+      "a0c96e64-00eb-47a4-8b7c-70035ccc71e9": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 1010,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": [],
+        "references": [
+          "0ed6b090-237d-4f57-ad37-f77099070540"
+        ],
+        "dependson": [
+          "97c64025-438f-4af4-afd1-18baa33f0dbc"
+        ]
+      },
+      "0ed6b090-237d-4f57-ad37-f77099070540": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 1010,
+          "y": 290
+        },
+        "z": 0,
+        "embeds": []
+      },
+      "47b1dfa3-3434-4265-96f4-25a6ef11964d": {
+        "source": {
+          "id": "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        },
+        "target": {
+          "id": "97c64025-438f-4af4-afd1-18baa33f0dbc"
+        },
+        "z": 11
+      },
+      "80eb011b-5d3f-4e10-9728-392827cc4a80": {
+        "source": {
+          "id": "cba4c0fc-c175-4f41-88be-bdcd9a25a862"
+        },
+        "target": {
+          "id": "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        },
+        "z": 4
+      },
+      "f55b605c-abf9-4903-8caf-d9b638f1e919": {
+        "source": {
+          "id": "cd66cd71-b482-4f28-92a6-11dc601a5597"
+        },
+        "target": {
+          "id": "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        },
+        "z": 4
+      },
+      "eeee439c-93d4-4d5d-904e-8de917cf1f40": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 730,
+          "y": 540
+        },
+        "z": 3,
+        "parent": "35cfa4d8-7b76-4317-a01a-96dbf919bd0d",
+        "embeds": [],
+        "dependson": [
+          "a0c96e64-00eb-47a4-8b7c-70035ccc71e9"
+        ],
+        "isrelatedto": [
+          "6378e06e-56df-465c-baa5-1984f0c2ff48",
+          "7d14e476-f68d-4015-9068-5b65c9d34560"
+        ]
+      },
+      "68a71f69-06b6-44b1-a4e7-97ca8995297f": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 720,
+          "y": 700
+        },
+        "z": 0,
+        "embeds": [],
+        "references": [
+          "7d14e476-f68d-4015-9068-5b65c9d34560"
+        ],
+        "dependson": [
+          "a0c96e64-00eb-47a4-8b7c-70035ccc71e9",
+          "eeee439c-93d4-4d5d-904e-8de917cf1f40"
+        ]
+      },
+      "7d14e476-f68d-4015-9068-5b65c9d34560": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 810,
+          "y": 700
+        },
+        "z": 0,
+        "embeds": []
+      },
+      "0eef5043-0727-47d5-8591-648eaf4ca05a": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 1010,
+          "y": 210
+        },
+        "z": 0,
+        "embeds": [],
+        "references": [
+          "7934e36f-378a-4447-aa93-674ae8a35be6"
+        ]
+      },
+      "7934e36f-378a-4447-aa93-674ae8a35be6": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 1010,
+          "y": 290
+        },
+        "z": 0,
+        "embeds": []
+      }
+    }
+  }
+}
