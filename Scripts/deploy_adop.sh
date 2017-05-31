@@ -169,7 +169,7 @@ function do_gerrit() {
   echo
   echo "Deploying Gerrit"
   echo
-  oc new-app adop-gerrit -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
+  oc new-app adop-gerrit -p PROJECT=$PROJECT_NAME -p SUB_DOMAIN=$SUB_DOMAIN -n $PROJECT_NAME
 
   do_sonar
 }

@@ -85,7 +85,7 @@ objects:
           - name: GERRIT_HOST_NAME
             value: ${GERRIT_HOST_NAME}
           - name: GERRIT_FRONT_END_URL
-            value: http://${GERRIT_HOST_NAME}:8080
+            value: http://${GERRIT_HOST_NAME}:8080/gerrit/
           - name: GERRIT_JENKINS_USERNAME
             value: ${GERRIT_JENKINS_USERNAME}
           - name: GERRIT_JENKINS_PASSWORD
