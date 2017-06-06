@@ -4,18 +4,6 @@
 oc new-project askme-dev --display-name="Ask Me - DEV"
 oc new-project askme-test --display-name="Ask Me - TEST"
 
-
-PUT /projects/MyProject HTTP/1.0
-Content-Type: application/json;charset=UTF-8
-
-{
-  "description": "This is a demo project.",
-  "submit_type": "CHERRY_PICK",
-  "owners": [
-    "MyProject-Owners"
-  ]
-}
-
 # Adding rights to execute containers with anyuid in both dev and test environments
 oc adm policy add-scc-to-group anyuid system:serviceaccounts:askme-dev
 oc adm policy add-scc-to-group anyuid system:serviceaccounts:askme-test
