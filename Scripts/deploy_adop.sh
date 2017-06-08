@@ -22,10 +22,10 @@
 ############ VARIABLES ############
 # OpenShift Project
 PROJECT_NAME=$1
-PROJECT_DISPLAY_NAME="DevOps Platform by Accenture ($PROJECT_NAME)"
-PROJECT_DESCRIPTION="DevOps Platform by Accenture - Jenkins, Gerrit, LDAP, SonarQube, Selenium and Nexus"
+PROJECT_DISPLAY_NAME="$2 ($PROJECT_NAME)"
+PROJECT_DESCRIPTION="$3"
 
-SUB_DOMAIN=$2
+SUB_DOMAIN=$4
 DEPLOYMENT_CHECK_INTERVAL=10 # Time in seconds between each check
 DEPLOYMENT_CHECK_TIMES=60
 ###################################
@@ -397,6 +397,9 @@ function do_init_adop_environments() {
 
   oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-test -n $PROJECT_NAME-dev
   oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-prod -n $PROJECT_NAME-dev
+
+  curl -X POST http://adop:adop@jenkins-$PROJECT_NAME.$SUB_DOMAIN/jenkins/job/Load_Platform/build \
+    --data-urlencode json='{"parameter": [{"name":"GIT_URL", "value":"https://github.com/sbstnbr/adop-platform-management"}, {"name":"GENERATE_EXAMPLE_WORKSPACE", "value":"true"}]}'
 }
 
 # Test if oc CLI is available
