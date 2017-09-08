@@ -1,0 +1,329 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: adop-ldap
+  annotations:
+    description: "LDAP for ADOP"
+    tags: "ldap,adop"
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${LDAP_NAME}
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${LDAP_NAME}
+      container: ${LDAP_NAME}
+      app: adop-${LDAP_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${LDAP_NAME}
+          container: ${LDAP_NAME}
+          app: adop-${LDAP_NAME}
+      spec:
+        containers:
+        - volumeMounts:
+          - name: db
+            mountPath: /var/lib/ldap
+          - name: static
+            mountPath: /etc/ldap
+          readinessProbe:
+            tcpSocket:
+              port: 389
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+          - name: INITIAL_ADMIN_PASSWORD
+            value: ${INITIAL_ADMIN_PASSWORD}
+          - name: INITIAL_ADMIN_USER
+            value: ${INITIAL_ADMIN_USER}
+          - name: GERRIT_PASSWORD
+            value: ${GERRIT_PASSWORD}
+          - name: JENKINS_PASSWORD
+            value: ${JENKINS_PASSWORD}
+          - name: SLAPD_DOMAIN
+            value: ${SLAPD_DOMAIN}
+          - name: SLAPD_FULL_DOMAIN
+            value: ${SLAPD_FULL_DOMAIN}
+          - name: SLAPD_PASSWORD
+            value: ${SLAPD_PASSWORD}
+          image: accenture/adop-ldap:0.1.3
+          imagePullPolicy: Always
+          name: ${LDAP_NAME}
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: ldap
+            containerPort: 389
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+        volumes:
+        - name: db
+          emptyDir: {}
+        - name: static
+          emptyDir: {}
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${LDAP_NAME}
+    labels:
+      service: ${LDAP_NAME}
+  spec:
+    ports:
+    - name: ldap
+      port: 389
+      targetPort: 389
+      protocol: TCP
+    selector:
+      deploymentconfig: ${LDAP_NAME}
+      container: ${LDAP_NAME}
+      app: adop-${LDAP_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${LDAP_NAME}-ltb
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${LDAP_NAME}-ltb
+      container: ${LDAP_NAME}-ltb
+      app: adop-${LDAP_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${LDAP_NAME}-ltb
+          container: ${LDAP_NAME}-ltb
+          app: adop-${LDAP_NAME}
+      spec:
+        containers:
+        - env:
+          - name: LDAP_LTB_BS
+            value: ${LDAP_LTB_BS}
+          - name: LDAP_LTB_DN
+            value: ${LDAP_LTB_DN}
+          - name: LDAP_LTB_PWD
+            value: ${LDAP_LTB_PWD}
+          - name: LDAP_LTB_URL
+            value: ${LDAP_LTB_URL}
+          image: accenture/adop-ldap-ltb:0.1.0
+          imagePullPolicy: Always
+          name: ${LDAP_NAME}-ltb
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        ports:
+          - name: http
+            containerPort: 80
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${LDAP_NAME}-ltb
+    labels:
+      service: ${LDAP_NAME}-ltb
+  spec:
+    ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    selector:
+      deploymentconfig: ${LDAP_NAME}-ltb
+      container: ${LDAP_NAME}-ltb
+      app: adop-${LDAP_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    name: ${LDAP_NAME}-phpadmin
+  spec:
+    replicas: 1
+    selector:
+      deploymentconfig: ${LDAP_NAME}-phpadmin
+      container: ${LDAP_NAME}-phpadmin
+      app: adop-${LDAP_NAME}
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          deploymentconfig: ${LDAP_NAME}-phpadmin
+          container: ${LDAP_NAME}-phpadmin
+          app: adop-${LDAP_NAME}
+      spec:
+        containers:
+        - env:
+          - name: LDAP_SERVER_NAME
+            value: ${LDAP_SERVER_NAME}
+          - name: LDAP_SERVER_PORT
+            value: ${LDAP_SERVER_PORT}
+          - name: LDAP_SERVER_BASE_DN
+            value: ${LDAP_SERVER_BASE_DN}
+          - name: LDAP_SERVER_BIND_ID
+            value: ${LDAP_SERVER_BIND_ID}
+          - name: LDAP_SERVER_HOST
+            value: ${LDAP_NAME}
+          image: accenture/adop-ldap-phpadmin:0.1.0
+          imagePullPolicy: Always
+          name: ${LDAP_NAME}-phpadmin
+          ports:
+          - name: http
+            protocol: TCP
+            containerPort: 80
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        serviceAccount: adop
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    name: ${LDAP_NAME}-phpadmin
+    labels:
+      service: ${LDAP_NAME}-phpadmin
+  spec:
+    ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    selector:
+      deploymentconfig: ${LDAP_NAME}-phpadmin
+      container: ${LDAP_NAME}-phpadmin
+      app: adop-${LDAP_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${LDAP_NAME}-phpadmin
+    labels:
+      app: ${LDAP_NAME}-phpadmin
+  spec:
+#    host: ${LDAP_NAME}-phpadmin.${SUB_DOMAIN}
+    to:
+      kind: Service
+      name: ${LDAP_NAME}-phpadmin
+parameters:
+- description: "TODO"
+  value: "ldap"
+  name: LDAP_NAME
+  required: true
+- description: "TODO"
+  value: "cloudapps.example.com"
+  name: SUB_DOMAIN
+  required: true
+- description: "TODO"
+  value: "Z2Vycml0"
+  name: GERRIT_PASSWORD
+  required: true
+- description: "TODO"
+  value: "YWRvcA=="
+  name: INITIAL_ADMIN_PASSWORD
+  required: false
+- description: "TODO"
+  value: "adop"
+  name: INITIAL_ADMIN_USER
+  required: true
+- description: "TODO"
+  value: "amVua2lucw=="
+  name: JENKINS_PASSWORD
+  required: true
+- description: "TODO"
+  value: "ldap.example.com"
+  name: SLAPD_DOMAIN
+  required: false
+- description: "TODO"
+  value: "dc=ldap,dc=example,dc=com"
+  name: SLAPD_FULL_DOMAIN
+  required: false
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  required: false
+  name: SLAPD_PASSWORD
+- description: "TODO"
+  value: "dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_LTB_BS
+- description: "TODO"
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_LTB_DN
+- description: "TODO"
+  value: "Jpk66g63ZifGYIcShSGM"
+  required: false
+  name: LDAP_LTB_PWD
+- description: "TODO"
+  value: "ldap://ldap:389"
+  required: false
+  name: LDAP_LTB_URL
+- description: "TODO"
+  value: "LDAP"
+  required: false
+  name: LDAP_SERVER_NAME
+- description: "TODO"
+  value: "389"
+  required: false
+  name: LDAP_SERVER_PORT
+- description: "TODO"
+  value: "cn=admin,dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_SERVER_BIND_ID
+- description: "TODO"
+  value: "dc=ldap,dc=example,dc=com"
+  required: false
+  name: LDAP_SERVER_BASE_DN
