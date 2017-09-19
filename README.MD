@@ -67,13 +67,5 @@ After that, the ADOP stack should be deployed and available in your Openshift cl
 
 * Add ELK stack or synchronize with openshift-metrics.
 * Add persistent volumes for required containers (cf. https://github.com/Accenture/adop-docker-compose/blob/master/etc/volumes/nfs/default.yml for volumes list).
-* Extend Openshift Jenkins Image? https://github.com/openshift/jenkins
-* Configure Jenkins to deploy on OpenShift (Works out-of-the-box once Openshift Pipeline is installed).
-* Configure Jenkins to sync with Openshift (Works out-of-the-box once Openshift Sync is installed).
+* Fix Sensu deployment
 * Write parameters' description.
-
-# Done
-* Write Readiness probes for ADOP containers.
-* Write script to load docker images on hosts.
-* Write deployment script
-* Write ADOP templates
