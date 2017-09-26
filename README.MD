@@ -6,6 +6,8 @@
   * Minishift
 * Git installed
 
+Want to run everything on Microsoft Azure? Have a look at [this repository](http://www.github.com/lbroudoux/openshift-azure) for a set of ARM templates on different OpenShift versions.
+
 # How to run Adop on OpenShift
 
 Adop is a large solution with a lot components, so, before going on the installation of Adop on OpenShift, you should download Adop images on your OpenShift cluster. For that purpose, you can use the ``adop_warmup.sh`` script on all your OpenShift nodes.
