@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: askme-pipeline-template
+  annotations:
+    description: "askme-pipeline-template for ADOP"
+    tags: "askme,adop"
+parameters:
+- description: "Application name"
+  value: "mycomp"
+  name: APP
+  required: true
+- description: "Adop main project id"
+  value: "52.233.140.114.nip.io"
+  name: PROJECT
+  required: true
+- description: "Subdomain routes suffix"
+  value: "demo"
+  name: SUBDOMAIN
+  required: true
+objects:
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    name: $APP-backbone-pipeline
+    labels:
+      name: $APP-backbone-pipeline
+  spec:
+    triggers:
+      - type: Generic
+        generic:
+          secret: secret101
+    runPolicy: Serial
+    source:
+      type: None
+    strategy:
+      type: JenkinsPipeline
+      jenkinsPipelineStrategy:
+        jenkinsfile: |-
+
+          node ('docker') {
+
+            stage ('Initialize') {
+            //  git url: 'http://adop:adop@gerrit-$PROJECT.$SUBDOMAIN/gerrit/ExampleWorkspace/ExampleProject/askme-backbone'
+            //  sh 'yum install bzip2 -y'
+            //  sh 'npm install'
+            //  sh 'bower install --allow-root'
+            //  sh 'node -v'
+            //  sh 'npm --version'
+            //  sh 'grunt --version'
+            }
+
+            stage ('Code Analysis') {
+              //sh 'grunt jshint:dist --force'
+            }
+
+            stage ('Unit Tests') {
+              // sh 'echo $PHANTOMJS_BIN'
+              // sh 'grunt test'
+              // sh 'grunt plato'
+            }
+
+            stage ('Build') {
+              openshiftBuild(namespace: '$PROJECT-dev', bldCfg: '$APP-backbone', showBuildLogs: 'true')
+            }
+
+            stage ('Deploy Dev') {
+              openshiftDeploy(namespace: '$PROJECT-dev', depCfg:  '$APP-backbone')
+            }
+
+            stage ('Security Tests') {
+              // echo 'TO DO with OWASPZAP'
+            }
+
+            stage ('Functional Tests') {
+              // sh 'grunt acceptance'
+            }
+
+            stage ('Deploy Test') {
+              openshiftTag(namespace: '$PROJECT-dev', sourceStream:'$APP-backbone', sourceTag:'latest', destinationStream:'$APP-backbone', destinationTag:'promoteToTest')
+              openshiftDeploy(namespace: '$PROJECT-test', depCfg:  '$APP-backbone')
+              openshiftScale(namespace: '$PROJECT-test',  depCfg:  '$APP-backbone', replicaCount: '2')
+            }
+
+            stage ('Performance Tests') {
+              // git url: 'ssh://jenkins@gerrit:29418/ExampleWorkspace/ExampleProject/askme-performance'
+              // sh 'sed -i "s/###TOKEN_VALID_URL###/${PERF_URL}/g" ${WORKSPACE}/src/test/scala/default/RecordedSimulation.scala'
+              // sh 'sed -i "s/###TOKEN_RESPONSE_TIME###/${MAX_RESPONSE_TIME}/g" ${WORKSPACE}/src/test/scala/default/RecordedSimulation.scala'
+              // sh 'mvn gatling:execute'
+            }
+
+            stage ('Deploy Prod') {
+              openshiftTag(namespace: '$PROJECT-dev', sourceStream:'$APP-backbone', sourceTag:'latest', destinationStream:'$APP-backbone', destinationTag:'promoteToProd')
+              openshiftDeploy(namespace: '$PROJECT-prod', depCfg:  '$APP-backbone')
+              openshiftScale(namespace: '$PROJECT-prod',  depCfg:  '$APP-backbone', replicaCount: '2')
+            }
+          }
+    output: {}
+    resources: {}
+    postCommit: {}

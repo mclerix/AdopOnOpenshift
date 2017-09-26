@@ -2,6 +2,7 @@
 # OpenShift Project
 APP_NAME=$1
 PROJECT_NAME=$2
+SUB_DOMAIN=$3
 
 # Adding rights to execute containers with anyuid in dev, test and prod environments
 oc adm policy add-scc-to-group anyuid system:serviceaccounts:$PROJECT_NAME-dev
@@ -14,7 +15,7 @@ oc adm policy add-scc-to-group anyuid system:serviceaccounts:$PROJECT_NAME-prod
 oc project $PROJECT_NAME-dev
 # 1 - Database
 #   Launching build of the database
-oc new-build https://github.com/clerixmaxime/askme-backend.git --context-dir=/database --strategy=docker --to=$APP_NAME-db --name=$APP_NAME-db -n $PROJECT_NAME-dev
+oc new-build http://adop:adop@gerrit-$PROJECT_NAME.$SUB_DOMAIN/gerrit/ExampleWorkspace/ExampleProject/askme-backend --context-dir=/database --strategy=docker --to=$APP_NAME-db --name=$APP_NAME-db -n $PROJECT_NAME-dev
 #   Launching mysql database using askme credentials questions/x2YfU8vHqAATS7Sh
 oc new-app --image-stream=$PROJECT_NAME-dev/$APP_NAME-db --name=database --allow-missing-imagestream-tags -e MYSQL_ROOT_PASSWORD='pass' -e MYSQL_USER='questions' -e MYSQL_PASSWORD='x2YfU8vHqAATS7Sh' -n $PROJECT_NAME-dev
 oc delete svc database -n $PROJECT_NAME-dev
@@ -26,7 +27,7 @@ oc rollout latest database -n $PROJECT_NAME-dev
 
 # 2 - Backend
 #   Classic build using S2I NodeJS official image.
-oc new-build nodejs~https://github.com/clerixmaxime/askme-backend.git --to=$APP_NAME-backend --name=$APP_NAME-backend -n $PROJECT_NAME-dev
+oc new-build nodejs~http://adop:adop@gerrit-$PROJECT_NAME.$SUB_DOMAIN/gerrit/ExampleWorkspace/ExampleProject/askme-backend --to=$APP_NAME-backend --name=$APP_NAME-backend -n $PROJECT_NAME-dev
 #   Launching backend, specifying the location of the database with DB_PORT_3306_TCP_ADDR env variable.
 #   /!\ Created service listen on port 8080 instead of 8081.
 oc new-app --image-stream=$PROJECT_NAME-dev/$APP_NAME-backend --name=backend --allow-missing-imagestream-tags -e DB_PORT_3306_TCP_ADDR='database' -n $PROJECT_NAME-dev
@@ -37,7 +38,7 @@ oc expose svc backend -n $PROJECT_NAME-dev
 # 3 - Frontend
 #   oc new-build sti-grunt-nginx~https://github.com/clerixmaxime/askme-backbone.git
 #   /!\ The application should be uploaded to ADOP and the STI-grunt-nginx image available
-oc new-build sti-grunt-nginx~https://github.com/clerixmaxime/askme-backbone.git --to=$APP_NAME-backbone --name=$APP_NAME-backbone -n $PROJECT_NAME-dev
+oc new-build sti-grunt-nginx~http://adop:adop@gerrit-$PROJECT_NAME.$SUB_DOMAIN/gerrit/ExampleWorkspace/ExampleProject/askme-backbone --to=$APP_NAME-backbone --name=$APP_NAME-backbone -n $PROJECT_NAME-dev
 oc new-app --image-stream=$PROJECT_NAME-dev/$APP_NAME-backbone --allow-missing-imagestream-tags -n $PROJECT_NAME-dev
 oc delete svc $APP_NAME-backbone -n $PROJECT_NAME-dev
 oc expose dc/$APP_NAME-backbone --port=8080 --target-port=8080 -n $PROJECT_NAME-dev
@@ -96,3 +97,13 @@ oc new-app --image-stream=$PROJECT_NAME-dev/$APP_NAME-backbone --allow-missing-i
 oc delete svc $APP_NAME-backbone -n $PROJECT_NAME-prod
 oc expose dc/$APP_NAME-backbone --port=8080 --target-port=8080 -n $PROJECT_NAME-prod
 oc expose svc $APP_NAME-backbone -n $PROJECT_NAME-prod
+
+# =====================
+# Deploy Pipeline
+# =====================
+
+oc process -f pipeline.yaml --param=APP=$APP_NAME --param=PROJECT=$PROJECT_NAME --param=SUBDOMAIN=$SUB_DOMAIN | oc create -n $PROJECT_NAME -f -
+
+oadm policy add-role-to-user edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-dev
+oadm policy add-role-to-user edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-test
+oadm policy add-role-to-user edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-prod
