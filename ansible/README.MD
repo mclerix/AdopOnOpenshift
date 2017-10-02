@@ -21,7 +21,7 @@ In this section, we will create 2 projects for ADOP deployment and ASKME deploym
     Organisation: Choose one depending on your Ansible Tower infrastructure
     ```
 
-While using SCM type as manual, The project base path field will give you the repository on your Ansible Tower that will hosts the playbook for your projects. Copy the playbook available on this link within the directory: 
+While using SCM type as manual, The project base path field will give you the repository on your Ansible Tower that will hosts the playbook for your projects. Copy the playbook available on this link within the directory: https://raw.githubusercontent.com/clerixmaxime/AdopOnOpenshift/master/ansible/adop/main.yml 
 
 Once done, do the same thing for Askme:
 
@@ -31,7 +31,7 @@ Once done, do the same thing for Askme:
     Name: ASKME deployment
     Organisation: Choose one depending on your Ansible Tower infrastructure
     ```
-Copy the playbook available on this link within the directory: 
+Copy the playbook available on this link within the directory: https://raw.githubusercontent.com/clerixmaxime/AdopOnOpenshift/master/ansible/askme/main.yml
 
 ## 2. Inventory
 
