@@ -1,0 +1,17 @@
+---
+##############################################
+#
+#   Playbook Ansible pour le deploiement
+#   d'Adop by Accenture
+#
+#   Auteur: Gauthier Donikian
+#
+##############################################
+- hosts: all
+  user: laurent
+  sudo: yes
+  ignore_errors: yes
+
+  tasks:
+  - name: Execution du script de deploiement d'adop
+    command: bash /opt/adop/deploy_adop.sh "{{ project_name }}" "{{ project_display_name }}" "{{ project_description }}"

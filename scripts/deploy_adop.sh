@@ -390,15 +390,15 @@ function do_init_adop_environments() {
   oc new-project $PROJECT_NAME-prod --display-name="$PROJECT_NAME - Prod"
 
   # Allow Jenkins to deploy to apps environments.
-  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-dev -n $PROJECT_NAME-dev
-  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-test -n $PROJECT_NAME-test
-  oadm policy add-role-to-group edit system:serviceaccounts:$PROJECT_NAME-prod -n $PROJECT_NAME-prod
+  oadm policy add-role-to-group edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-dev
+  oadm policy add-role-to-group edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-test
+  oadm policy add-role-to-group edit system:serviceaccount:$PROJECT_NAME:adop -n $PROJECT_NAME-prod
 
   oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-test -n $PROJECT_NAME-dev
   oadm policy add-role-to-group system:image-puller system:serviceaccounts:$PROJECT_NAME-prod -n $PROJECT_NAME-dev
 
   curl -X POST http://adop:adop@jenkins-$PROJECT_NAME.$SUB_DOMAIN/jenkins/job/Load_Platform/build \
-    --data-urlencode json='{"parameter": [{"name":"GIT_URL", "value":"https://github.com/sbstnbr/adop-platform-management"}, {"name":"GENERATE_EXAMPLE_WORKSPACE", "value":"true"}]}'
+    --data-urlencode json='{"parameter": [{"name":"GIT_URL", "value":"https://github.com/clerixmaxime/adop-platform-management"}, {"name":"GENERATE_EXAMPLE_WORKSPACE", "value":"true"}]}'
 }
 
 # Test if oc CLI is available

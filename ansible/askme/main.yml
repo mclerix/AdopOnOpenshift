@@ -1,0 +1,17 @@
+---
+##############################################
+#
+#   Playbook Ansible pour le deploiement
+#   d'AskMe by Accenture
+#
+#   Auteur: Gauthier Donikian
+#
+##############################################
+- hosts: all
+  user: laurent
+  sudo: yes
+  ignore_errors: yes
+
+  tasks:
+  - name: Execution du script de deploiement d'adop
+    command: bash /opt/adop/deploy_askme.sh "{{ app_name }}" "{{ project_name }}"
