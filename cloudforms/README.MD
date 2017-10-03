@@ -45,19 +45,22 @@ Requirements:
     * Call it "ADOP deployment"
 2. Customise the Service Dialog
     * Go to `Automation > Automate > Customization`. Expand `Service dialogs` and select "ADOP deployment". Click on `Configuration > Edit this Dialog`
-    * Under `ADOP deployment > Basic Information > Options`, create 3 fields.
+    * Under `ADOP deployment > Basic Information > Extra Variables`, make sure 3 fields have been created with the following values:
         * Name
             * Label: Name:
             * Name: param_project_name
             * Type: text box
+            * Uncheck "readonly" option
         * Display Name
             * Label: Display Name:
             * Name: param_project_display_name
             * Type: text box
+            * Uncheck "readonly" option
         * Description
             * Label: Description:
             * Name: param_project_description
             * Type: text box
+            * Uncheck "readonly" option
     * Once modifications are done, click on "Save"
 
 ### AskMe
@@ -66,16 +69,19 @@ Requirements:
     * Call it "AskMe deployment"
 2. Customise the Service Dialog
     * Go to `Automation > Automate > Customization`. Expand `Service dialogs` and select "AskMe deployment". Click on `Configuration > Edit this Dialog`
-    * Under `AskMe deployment > Basic Information > Options`, create 2 fields.
+    * Under `AskMe deployment > Basic Information > Extra Variables`, make sure 2 fields have been created with the following values:
         * Name
             * Label: App Name:
             * Name: param_app_name
             * Type: text box
+            * Uncheck "readonly" option
         * Display Name
             * Label: Project Name:
             * Name: param_project_name
             * Type: text box
+            * Uncheck "readonly" option
     * Once modifications are done, click on "Save"
+
 ## 4. Create a Service Catalog
 1. Create Service Catalog
     * Go to `Service > Catalogs`. Click on "Catalogs" on the left list and then `Configuration > Add new catalog`.

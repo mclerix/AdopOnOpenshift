@@ -25,13 +25,13 @@ Want to run everything on Microsoft Azure? Have a look at [this repository](http
 ```bash
 ./deploy_adop.sh PROJECT_NAME PROJECT_DISPLAY_NAME PROJECT_DESCRIPTION SUB_DOMAIN
 Example:
-./deploy_adop.sh adop "Adop project" "Deployment of ADOP by Accenture" apps.example.com
+./deploy_adop.sh "demo" "Adop for demo" "Accenture DevOps Platform for demo" "cloudapps.example.com"
 ```
   - There are four parameters for this script: <br>
     PROJECT_NAME <br>
     PROJECT_DISPLAY_NAME <br>
     PROJECT_DESCRIPTION <br>
-    SUB_DOMAIN (This parameter should match the wildcard of your cluster)
+    SUB_DOMAIN (This parameter should match the wildcard of your router)
 
 After few minutes, ADOP should be up & running on your Openshift cluster.
 
